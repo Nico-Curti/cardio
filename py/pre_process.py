@@ -31,6 +31,14 @@ filtering = lambda x    : signal.lfilter(*signal.butter(order, Wn, "bandpass"), 
 m_avg     = lambda t, x : (np.asarray([t[i] for i in range(n_mov_avg, len(x) - n_mov_avg)]),
                            np.convolve(x, np.ones((2*n_mov_avg + 1, )) / (2*n_mov_avg + 1), mode = 'valid'))
 
+def rolmean(signal, hrw, fs):
+  dataset = pd.Series(data=signal)
+  mov_avg = dataset.rolling(int(hrw * fs)).mean()
+  avg_hr  = np.mean(signal)
+  mov_avg = np.asarray([avg_hr if np.isnan(x) else x for x in mov_avg])
+  return mov_avg * 1.2
+
+
 def process_pipe(data, view = False, output = ""):
   # spline interpolation of data
   t, r = interpolation(data)
@@ -38,10 +46,11 @@ def process_pipe(data, view = False, output = ""):
   r = np.insert(r, 0, r[:guard])
   # filter data
   rf = filtering(r)
+  fs = len(t)/max(t)
+  rma = rolmean(rf, .5, fs)
+  analytical_signal = np.abs(signal.hilbert(rma))
+  rf /= analytical_signal
   rf = rf[guard:]
-#  rf *= -1 # ecg fmt of the curve
-  # moving average
-  tma, rma = m_avg(t, rf)
 
   if view:
     fig, (ax1, ax2, ax3) = plt.subplots(nrows = 3, ncols = 1, figsize = (10, 8), sharex=True)
@@ -55,7 +64,7 @@ def process_pipe(data, view = False, output = ""):
     ax2.set_ylim(-.05, .05)
     ax2.set_title("Raw -> filtered", fontsize=14, fontweight="bold")
 
-    ax3.plot(tma, rma, "g-", label="Move Avg")
+    ax3.plot(t, rma, "g-", label="Move Avg")
     ax3.set_xlim(0, t[-1])
     ax3.set_ylim(-.05, .05)
     ax3.set_title("Raw -> filtered -> move avg", fontsize=14, fontweight="bold")
@@ -63,7 +72,7 @@ def process_pipe(data, view = False, output = ""):
     ax3.set_xlabel("Time (sec)", fontsize=14) # common axis label
     plt.tight_layout()
     plt.savefig(output, bbox_inches='tight')
-  return tma, rma
+  return t, rma
 
 
 if __name__ == '__main__':

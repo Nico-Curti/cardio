@@ -7,13 +7,6 @@ import numpy as np
 import pre_process as pr
 import json
 
-def rolmean(signal, hrw, fs):
-  dataset = pd.Series(data=signal)
-  mov_avg = dataset.rolling(int(hrw * fs)).mean()
-  avg_hr  = np.mean(signal)
-  mov_avg = np.asarray([avg_hr if np.isnan(x) else x for x in mov_avg])
-  return mov_avg * 1.2
-
 def detect_peaks(signal, mov_avg):
   window = []
   peaklist = []
@@ -74,7 +67,7 @@ def create_db(data_dir, info_dir=''):
     time, sign = pr.process_pipe(data, view=False, output='')
     srate = len(time)/max(time)
 
-    mov_avg = rolmean(sign, .5, srate)
+    mov_avg = pr.rolmean(sign, .5, srate)
     peaklist, sign_peak = detect_peaks(sign, mov_avg)
 
     # compute some common measurements
