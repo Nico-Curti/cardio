@@ -5,6 +5,7 @@ import glob
 import pandas as pd
 import numpy as np
 import pre_process as pr
+from scipy import interpolate, fftpack
 import json
 
 def detect_peaks(signal, mov_avg):
@@ -87,7 +88,15 @@ def create_db(data_dir, info_dir=''):
 
     # compute frequency domain measurements
     # TODO
+    new_range = np.linspace(0, len(RR), len(RR)*100)
+    tck = interpolate.splrep(np.arange(0, len(RR)), RR, s=0)
+    RR_new = interpolate.splev(new_range, tck, der=0)
+    RR_fft = fftpack.fft(RR_new)
+    freq = fftpack.fftfreq(len(RR_new), d=((1./srate)))[:len(RR_new)//2]
+    RR_fft = RR_fft[:len(RR_new)//2] / len(RR_new)
 
+    lf = np.trapz(abs(RR_fft[(freq >= .04) & (freq <= .15)]))
+    hf = np.trapz(abs(RR_fft[(freq >= .16) & (freq <= .5 )]))
 
     features[f] = {'sex' : info.Sex.values.item(),
                    'age' : info.Age.values.item(),
@@ -104,6 +113,8 @@ def create_db(data_dir, info_dir=''):
                    'pnn20' : pnn20,
                    'pnn50' : pnn50,
                    'mad' : mad,
+                   'lf' : lf,
+                   'hf' : hf,
                    'time' : time,
                    'signal' : sign
                    }
