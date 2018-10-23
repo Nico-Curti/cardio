@@ -6,73 +6,61 @@ from os.path import basename, splitext
 # pre processing data
 import numpy as np
 import pandas as pd
-import matplotlib.pylab as plt
-from scipy import interpolate, signal
+from scipy import signal#, interpolate
 
-guard = 1000 # number of points to append before filtering (artifacts remove)
-new_freq = 180 # interpolatin freq (Hz)
-startbpm = 40
-limitbpm = 240
-order = 4     # filter order
-t_avg = .1    # time interval for averaging (sec)
-n_mov_avg = int(np.ceil(t_avg * .5 * new_freq))
-f1 = startbpm / 60; # Start Frequency
-f2 = limitbpm / 60; # Cut off Frequency
-Wn = np.asarray([f1, f2]) / (new_freq * .5) # Butterworth paramter
-
-def interpolation(data):
-  t_int   = np.arange(data.Time.iloc[0], data.Time.iloc[-1], 1./new_freq)
-  tck     = interpolate.splrep(data.Time, data.R, s=0)
-  red_int = interpolate.splev(t_int, tck, der=0)
-
-  return t_int, red_int
-
-filtering = lambda x    : signal.lfilter(*signal.butter(order, Wn, "bandpass"), x)
-m_avg     = lambda t, x : (np.asarray([t[i] for i in range(n_mov_avg, len(x) - n_mov_avg)]),
-                           np.convolve(x, np.ones((2*n_mov_avg + 1, )) / (2*n_mov_avg + 1), mode = 'valid'))
-
-def rolmean(signal, hrw, fs):
-  dataset = pd.Series(data=signal)
-  mov_avg = dataset.rolling(int(hrw * fs)).mean()
-  avg_hr  = np.mean(signal)
-  mov_avg = np.asarray([avg_hr if np.isnan(x) else x for x in mov_avg])
-  return mov_avg * 1.2
-
+m_avg = lambda t, x, w : (np.asarray([t[i] for i in range(w, len(x) - w)]),
+                          np.convolve(x, np.ones((2*w + 1, )) / (2*w + 1),
+                                      mode = 'valid'))
 
 def process_pipe(data, view = False, output = ""):
-  # spline interpolation of data
-  t, r = interpolation(data)
+  fs = len(data.Time)/max(data.Time)
+  # moving average
+  w_size = int(fs * .5)
+  mt, ms = m_avg(data.Time, data.R, w_size)
 
-  r = np.insert(r, 0, r[:guard])
-  # filter data
-  rf = filtering(r)
-  fs = len(t)/max(t)
-  rma = rolmean(rf, .5, fs)
-  analytical_signal = np.abs(signal.hilbert(rma))
-  rf /= analytical_signal
-  rf = rf[guard:]
+  # remove global modulation
+  sign = (data.R.iloc[w_size : -w_size] - ms).values
+
+  # compute signal envelope
+  analytical_signal = np.abs(signal.hilbert(sign))
+
+  fs = len(sign) / max(mt)
+  w_size = int(fs)
+  # moving averate of envelope
+  mt_new, mov_avg = m_avg(mt, analytical_signal, w_size)
+
+  # remove envelope
+  signal_pure = sign[w_size : -w_size] / mov_avg
+
+  # spline interpolation of data
+#  t_new = np.arange(mt[0], mt[-1], 1./(len(mt) * 10)) # increase of f sampling of 10
+#  tck   = interpolate.splrep(mt, signal_pure, s=0)
+#  signal_upsample = interpolate.splev(t_new, tck, der=0)
 
   if view:
+
+    import matplotlib.pylab as plt
+
     fig, (ax1, ax2, ax3) = plt.subplots(nrows = 3, ncols = 1, figsize = (10, 8), sharex=True)
-    ax1.plot(t, r[guard:], "b-", label="Spline")
-    ax1.set_xlim(0, t[-1])
-    ax1.set_ylim(.8, 1)
-    ax1.set_title("Raw", fontsize=14, fontweight="bold")
+    ax1.plot(data.Time, data.R, "b-", label="Original")
+    ax1.legend(loc='best')
+    ax1.set_title("Raw", fontsize=14)#, fontweight="bold")
 
-    ax2.plot(t, rf, 'r-', label="Butterworth filter")
-    ax2.set_xlim(0, t[-1])
-    ax2.set_ylim(-.05, .05)
-    ax2.set_title("Raw -> filtered", fontsize=14, fontweight="bold")
+    ax2.plot(mt, sign, 'r-', label="Pure signal")
+    ax2.plot(mt_new, mov_avg, 'b-', label='Modulation', alpha=.5)
+    ax2.legend(loc='best')
+    ax2.set_title("Raw -> filtered", fontsize=14)#, fontweight="bold")
 
-    ax3.plot(t, rma, "g-", label="Move Avg")
-    ax3.set_xlim(0, t[-1])
-    ax3.set_ylim(-.05, .05)
-    ax3.set_title("Raw -> filtered -> move avg", fontsize=14, fontweight="bold")
+    ax3.plot(mt_new, signal_pure, "g-", label="Demodulated")
+    ax3.set_xlim(0, mt[-1])
+    ax3.set_title("Raw -> filtered -> demodulated", fontsize=14)#, fontweight="bold")
 
     ax3.set_xlabel("Time (sec)", fontsize=14) # common axis label
-    plt.tight_layout()
+    ax3.legend(loc='best')
+    fig.tight_layout()
     plt.savefig(output, bbox_inches='tight')
-  return t, rma
+
+  return mt_new, signal_pure
 
 
 if __name__ == '__main__':
