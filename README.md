@@ -2,7 +2,11 @@
 |:------------:|:-----------:|
 |   N. Curti   |    Cardio   |
 
-<img src="https://fr.wikipedia.org/wiki/Université_de_Bologne#/media/File:Seal_of_the_University_of_Bologna.svg" width="300" height="167" />
+<a href="https://github.com/UniboDIFABiophysics">
+<div class="image">
+<img src="https://cdn.rawgit.com/physycom/templates/697b327d/logo_unibo.png" width="90" height="90">
+</div>
+</a>
 
 ### (Cardiological data processing)
 
