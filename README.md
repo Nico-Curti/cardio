@@ -47,8 +47,4 @@ NO LICENSEs are available.
 
 Thanks goes to all contributors of this project:
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore -->
-[<img src="https://avatars0.githubusercontent.com/u/1419337?s=400&v=4" width="100px;"/><br /><sub><b>Enrico Giampieri</b></sub>](https://github.com/EnricoGiampieri)<br />
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-[<img src="https://avatars3.githubusercontent.com/u/44815392?s=400&v=4" width="100px;"/><br /><sub><b>Lorenzo Dall'Olio</b></sub>](https://github.com/Lyro96)<br />
+[<img src="https://avatars0.githubusercontent.com/u/1419337?s=400&v=4" width="100px;"/><br /><sub><b>Enrico Giampieri</b></sub>](https://github.com/EnricoGiampieri)<br />      [<img src="https://avatars3.githubusercontent.com/u/44815392?s=400&v=4" width="100px;"/><br /><sub><b>Lorenzo Dall'Olio</b></sub>](https://github.com/Lyro96)<br />
