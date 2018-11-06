@@ -79,7 +79,7 @@ def create_db(data_dir, info_dir=''):
   datas = sorted(glob.glob(join(data_dir, '*_data.txt')))
   infos = sorted(glob.glob(join(info_dir, '*_info.txt')))
 
-  for f, i in zip(datas, infos):
+  for f, i in zip(datas[:2], infos[:2]):
     bf, bi = basename(f).split('_'), basename(i).split('_')
     assert(bf[1] == bi[1])
     print("Processing file %s"%(basename(f)))
@@ -160,7 +160,7 @@ def create_db(data_dir, info_dir=''):
                    'smoke': info.Smoking.values.item(),
                    'afib': info.Afib.values.item(),
                    'rhythm' : info.Rhythm.values.item(),
-                   'RR' : RR,
+                   'RR' : RR.tolist(),
                    'bpm' : bpm,
                    'ibi' : ibi,
                    'sdnn' : sdnn,
@@ -174,8 +174,8 @@ def create_db(data_dir, info_dir=''):
                    'entropy' : entropy,
                    'opt_delay' : opt_delay,
                    'embedim' : embedim,
-                   'time' : time,
-                   'signal' : sign
+                   'time' : time.tolist(),
+                   'signal' : sign.tolist()
                    }
 
 
