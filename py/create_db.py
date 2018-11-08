@@ -12,6 +12,7 @@ import json
 
 import pre_process as pr
 
+#TOFIX: actually different dimensions of signal and mov_avg and not sinchronized
 def detect_peaks(signal, mov_avg):
   window = []
   peaklist = []
@@ -122,14 +123,13 @@ def create_db(data_dir, info_dir=''):
 #    RR = scipy.signal.detrend(RR, type='linear')
     RR_diff = np.abs(np.diff(RR))
     ibi = np.mean(RR) # mean Inter Beat Interval
-    bpm = 60000 / ibi
+    bpm = 60000 / ibi # mean bpm
     sdnn = np.std(RR) # Take standard deviation of all R-R intervals
     sdsd = np.std(RR_diff) # #Take standard deviation of the differences between all subsequent R-R intervals
     rmssd = np.sqrt(np.mean(RR_diff**2)) # #Take root of the mean of the list of squared differences
 
-    pnn20 = len(RR_diff[RR_diff > 20.] / len(RR_diff))
-    pnn50 = len(RR_diff[RR_diff > 50.] / len(RR_diff))
-
+    pnn20 = len(RR_diff[RR_diff > 20.]) / len(RR_diff)
+    pnn50 = len(RR_diff[RR_diff > 50.]) / len(RR_diff)
     mad = np.median(np.abs(RR - np.median(RR)))
 
     # compute frequency domain measurements
@@ -139,8 +139,8 @@ def create_db(data_dir, info_dir=''):
     RR_new = interpolate.splev(new_range, tck, der=0)
     RR_fft = fftpack.fft(RR_new)
     freq = fftpack.fftfreq(len(RR_new), d=((1./srate)))[:len(RR_new)//2]
-    RR_fft = RR_fft[:len(RR_new)//2] / len(RR_new)
-
+    RR_fft = RR_fft[:len(RR_new)//2] / len(sign)
+    
     lf = np.trapz(abs(RR_fft[(freq >= .04) & (freq <= .15)]))
     hf = np.trapz(abs(RR_fft[(freq >= .15) & (freq <= .4 )]))
 
@@ -199,3 +199,5 @@ if __name__ == '__main__':
 
   create_db(data_dir, info_dir)
 
+
+# Reference code: https://github.com/paulvangentcom/heartrate_analysis_python
