@@ -4,15 +4,16 @@ from os.path import basename, join
 import glob
 import pandas as pd
 import numpy as np
-from scipy import interpolate, fftpack, stats
+from scipy.special import entr
+from scipy import interpolate, fftpack
 from sklearn.metrics import mutual_info_score # mutual information algorithm
 from sklearn.metrics.pairwise import euclidean_distances as dist
 from statsmodels.tsa.tsatools import lagmat
 import json
-
+import matplotlib.pylab as plt
 import pre_process as pr
 
-#TOFIX: actually different dimensions of signal and mov_avg and not sinchronized
+
 def detect_peaks(signal, mov_avg):
   window = []
   peaklist = []
@@ -25,9 +26,9 @@ def detect_peaks(signal, mov_avg):
       beatposition = i - len(window) + np.argmax(window)
       peaklist.append(beatposition)
       window = []
+
   return peaklist, [signal[x] for x in peaklist]
 
-calc_RR = lambda peaklist, fs: (np.diff(peaklist) / fs) * 1e3
 
 mutual_info = lambda x, y, bins : mutual_info_score(None,
                                                     None,
@@ -73,14 +74,14 @@ def fnn(data, m):
       break
   return embedm
 
-def create_db(data_dir, info_dir=''):
 
+def create_db(data_dir, info_dir=""):
   features = {}
 
-  datas = sorted(glob.glob(join(data_dir, '*_data.txt')))
-  infos = sorted(glob.glob(join(info_dir, '*_info.txt')))
+  datas = sorted(glob.glob(join(data_dir, "*_data.txt")))
+  infos = sorted(glob.glob(join(info_dir, "*_info.txt")))
 
-  for f, i in zip(datas[:2], infos[:2]):
+  for f, i in zip(datas[:], infos[:]):
     bf, bi = basename(f).split('_'), basename(i).split('_')
     assert(bf[1] == bi[1])
     print("Processing file %s"%(basename(f)))
@@ -112,75 +113,125 @@ def create_db(data_dir, info_dir=''):
                         )
 
     data = pd.read_csv(f, sep=',')
-    time, sign = pr.process_pipe(data, view=False, output='')
-    srate = len(time)/max(time)
+    time, sign = pr.process_pipe(data, view=False, output='', name=bf[1])
 
-    mt, mov_avg = pr.m_avg(time, sign, int(srate*.5))#rolmean(sign, .5, srate)
-    peaklist, sign_peak = detect_peaks(sign, mov_avg)
+    srate = len(time)/(max(time)-min(time))  #sampling rate
+    peaks = np.arange(len(sign))  #initializing peaks index
+
+    # making peak detection using 4 different sliding windows, their width is in srate units
+    for i in np.array([.5, 1., 1.5, 2.]):  # widths
+      mt, mov_avg = pr.m_avg(time, sign, int(srate*i))
+      len_filler = np.zeros((len(sign)-len(mov_avg))//2) + np.mean(sign) # used to make mov_avg the same size as sign
+      mov_avg = np.insert(mov_avg, 0, len_filler)
+      mov_avg = np.append(mov_avg, len_filler)
+
+      peaklist, sign_peak = detect_peaks(sign,mov_avg)
+      peaks = np.intersect1d(peaks, peaklist)  # keeping only peaks detected with all 4 different windows
+
+
+		# peaks' checking: rejecting lower peaks where RR distance is too small
+    final_peaks = [] # definitive peaks positions container
+    last_peak = -1  # control parameter to avoid undesired peaks still in final_peaks
+    for p in peaks:
+      if(p<=last_peak):
+        continue
+      evaluated_peaks = [g for g in peaks if p <= g <= srate*.5+p ]  # peaks evaluated t once, only 1 of them will be kept in final_peaks
+      last_peak = max(evaluated_peaks)
+      final_peaks.append(evaluated_peaks[np.argmax([sign[x] for x in evaluated_peaks])])
+
+    final_peaks = np.unique(final_peaks)  # to avoid repetition of identical elements
+
+
+		# computation of quality coefficient
+    grad = np.gradient(sign)  # gradient of signal
+    checker = np.multiply(grad[:-1], grad[1:]) # equals to grad_i * grad_i+1
+
+    # to count "how many times signal inverts its growth without having a peak" (index of bad quality for our signals)
+    # we can count how many times gradient changes its sign (local maxima or local minima) and subtract twice the number of peaks to that
+    # then we can multiply by the variance of peaks' amplitude to enhance the bad contribute given by messy peaks
+
+    quality = np.var([sign[x] for x in final_peaks])*(len(checker[checker<0]) - 2*len(final_peaks) + 2) / len(checker)  # "+2" is just to avoid negative numbers
+
+    # Note Well: now quality it's a defect index. It goes from 0 to 1
+    # where 0 is for perfect signals and >0.05 is for horrible signals.
+    # usually we have (with some exceptions):
+    # quality ~ 1e-5 or less  PERFECT
+    # quality ~ 1e-4          GOOD
+    # quality ~ 1e-3          GOOD WITH PROBLEMS
+    # quality ~ 2e-2          BAD
+    # quality > 5e-2          HORRIBLE
+
 
     # compute some common measurements
-    RR = calc_RR(peaklist, srate)
-#    RR = scipy.signal.detrend(RR, type='linear')
-    RR_diff = np.abs(np.diff(RR))
-    ibi = np.mean(RR) # mean Inter Beat Interval
-    bpm = 60000 / ibi # mean bpm
-    sdnn = np.std(RR) # Take standard deviation of all R-R intervals
-    sdsd = np.std(RR_diff) # #Take standard deviation of the differences between all subsequent R-R intervals
-    rmssd = np.sqrt(np.mean(RR_diff**2)) # #Take root of the mean of the list of squared differences
+    RR = np.diff(time[final_peaks], 1, 0,)*1e3  # time between consecutive R peaks (in milliseconds)
+    RR_diff = np.abs(np.diff(RR, 1, 0))  # time variation between consecutive RR intervals
+    ibi = np.mean(RR)  # mean Inter Beat Interval
+    bpm = 60000 / ibi  # mean bpm
+    sdnn = np.std(RR)  # Take standard deviation of all R-R intervals
+    sdsd = np.std(RR_diff)  # #Take standard deviation of the differences between all subsequent R-R intervals
+    rmssd = np.sqrt(np.mean(RR_diff**2))  #Take the square root of the mean of the list of squared differences
 
-    pnn20 = len(RR_diff[RR_diff > 20.]) / len(RR_diff)
-    pnn50 = len(RR_diff[RR_diff > 50.]) / len(RR_diff)
+    x = np.multiply(RR[1:-1]-RR[:-2], RR[1:-1]-RR[2:]) # we have a turning point when x>0
+    tpr = len(x[x>0.]) / len(x) # turning point ratio (randomness index)
+    x = np.multiply(RR_diff[1:-1]-RR_diff[:-2], RR_diff[1:-1]-RR_diff[2:]) #same but with RR_diff instead of RR
+    tpr_RR_diff = len(x[x>0.]) / len(x)
+    pnn20 = len(RR_diff[RR_diff > 20.]) / len(RR_diff)  # percentage of RR_diff > 20 milliseconds
+    pnn50 = len(RR_diff[RR_diff > 50.]) / len(RR_diff)  # percentage of RR_diff > 50 milliseconds
+
     mad = np.median(np.abs(RR - np.median(RR)))
 
+
     # compute frequency domain measurements
-    # TOFIX
-    new_range = np.linspace(0, len(RR), len(RR)*100)
+    new_range = np.linspace(0, len(RR), len(RR)*100)  # resampling data at higher frequency (x100)
     tck = interpolate.splrep(np.arange(0, len(RR)), RR, s=0)
     RR_new = interpolate.splev(new_range, tck, der=0)
-    RR_fft = fftpack.fft(RR_new)
-    freq = fftpack.fftfreq(len(RR_new), d=((1./srate)))[:len(RR_new)//2]
-    RR_fft = RR_fft[:len(RR_new)//2] / len(sign)
-    
-    lf = np.trapz(abs(RR_fft[(freq >= .04) & (freq <= .15)]))
-    hf = np.trapz(abs(RR_fft[(freq >= .15) & (freq <= .4 )]))
+    RR_fft = fftpack.fft(RR_new)  # fast fourier transform
+    freq = fftpack.fftfreq(len(RR_new), d=(1./srate))[:len(RR_new)//2]
+    RR_fft = RR_fft[:len(RR_new)//2] / len(new_range)
+
+    lf = np.trapz(abs(RR_fft[(freq >= .04) & (freq <= .15)]))  # Low Frequency is related to short-term blood pressure regulation
+    hf = np.trapz(abs(RR_fft[(freq > .15) & (freq <= .4 )]))  # High Frequency is related to breathing
+
 
     # other features
-    p_data = pd.Series(data=sign).value_counts() / len(sign)
-    entropy = stats.entropy(p_data)
+    entropy = sum(entr(RR/sum(RR)))  # signal special-entropy
 
-    tau_max = 1000
-    mi = MI(sign, tau_max)
+    tau_max = 400  #  keep an eye on. probably must be < 439 (file 1380 is the shortest)
+    mi = MI(sign, tau_max)  # mutual information
     mi_t, mi_avg = pr.m_avg(np.arange(0, len(mi)), mi, 100)
     opt_delay = mt[np.argmin(mi_avg)]
     embedim = fnn(sign, 20)
 
-    features[f] = {'sex' : info.Sex.values.item(),
-                   'age' : info.Age.values.item(),
-                   'weight' : info.Weight.values.item(),
-                   'smoke': info.Smoking.values.item(),
-                   'afib': info.Afib.values.item(),
-                   'rhythm' : info.Rhythm.values.item(),
-                   'RR' : RR.tolist(),
-                   'bpm' : bpm,
-                   'ibi' : ibi,
-                   'sdnn' : sdnn,
-                   'sdsd' : sdsd,
-                   'rmssd' : rmssd,
-                   'pnn20' : pnn20,
-                   'pnn50' : pnn50,
-                   'mad' : mad,
-                   'lf' : lf,
-                   'hf' : hf,
-                   'entropy' : entropy,
-                   'opt_delay' : opt_delay,
-                   'embedim' : embedim,
-                   'time' : time.tolist(),
-                   'signal' : sign.tolist()
+    features[f] = {"sex" : info.Sex.values.item(),
+                   "age" : info.Age.values.item(),
+                   "weight" : info.Weight.values.item(),
+                   "smoke": info.Smoking.values.item(),
+                   "afib": info.Afib.values.item(),
+                   "rhythm" : info.Rhythm.values.item(),
+                   "quality" : quality,
+                   "RR" : RR.tolist(),
+                   "bpm" : bpm,
+                   "ibi" : ibi,
+                   "sdnn" : sdnn,
+                   "sdsd" : sdsd,
+                   "rmssd" : rmssd,
+                   "tpr" : tpr,
+                   "tpr_RR_diff" : tpr_RR_diff,
+                   "pnn20" : pnn20,
+                   "pnn50" : pnn50,
+                   "mad" : mad,
+                   "lf" : lf,
+                   "hf" : hf,
+                   "entropy" : entropy,
+                   "opt_delay" : opt_delay,
+                   "embedim" : embedim,
+                   "time" : time.tolist(),
+                   "signal" : sign.tolist()
                    }
 
-
-  with open('cardio.json', 'w') as f:
-    json.dump(features, f)
+  # saving data on file cardio.json
+  with open('cardio.json', 'w') as file:
+    json.dump(features, file)
 
 if __name__ == '__main__':
   description = "Create DB data"
