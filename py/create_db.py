@@ -1,4 +1,7 @@
 #!/usr/bin/python
+
+# References: https://github.com/paulvangentcom/heartrate_analysis_python
+
 import sys, argparse
 from os.path import basename, join
 import glob
@@ -133,9 +136,9 @@ def create_db(data_dir, info_dir=""):
     final_peaks = [] # definitive peaks positions container
     last_peak = -1  # control parameter to avoid undesired peaks still in final_peaks
     for p in peaks:
-      if(p<=last_peak):
+      if p <= last_peak:
         continue
-      evaluated_peaks = [g for g in peaks if p <= g <= srate*.5+p ]  # peaks evaluated t once, only 1 of them will be kept in final_peaks
+      evaluated_peaks = [g for g in peaks if p <= g <= srate * .5 + p ]  # peaks evaluated t once, only 1 of them will be kept in final_peaks
       last_peak = max(evaluated_peaks)
       final_peaks.append(evaluated_peaks[np.argmax([sign[x] for x in evaluated_peaks])])
 
@@ -150,7 +153,7 @@ def create_db(data_dir, info_dir=""):
     # we can count how many times gradient changes its sign (local maxima or local minima) and subtract twice the number of peaks to that
     # then we can multiply by the variance of peaks' amplitude to enhance the bad contribute given by messy peaks
 
-    quality = np.var([sign[x] for x in final_peaks])*(len(checker[checker<0]) - 2*len(final_peaks) + 2) / len(checker)  # "+2" is just to avoid negative numbers
+    quality = np.var([sign[x] for x in final_peaks])*(len(checker[checker < 0]) - 2 * len(final_peaks) + 2) / len(checker)  # "+2" is just to avoid negative numbers
 
     # Note Well: now quality it's a defect index. It goes from 0 to 1
     # where 0 is for perfect signals and >0.05 is for horrible signals.
@@ -249,6 +252,3 @@ if __name__ == '__main__':
   else:                   info_dir = args.info_dir
 
   create_db(data_dir, info_dir)
-
-
-# Reference code: https://github.com/paulvangentcom/heartrate_analysis_python
