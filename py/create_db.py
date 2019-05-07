@@ -8,6 +8,7 @@ import glob
 import pandas as pd
 import numpy as np
 from scipy.special import entr
+from scipy.stats import skew, kurtosis, pearsonr  # , skewtest, kurtosistest
 from scipy import interpolate, fftpack
 from sklearn.metrics import mutual_info_score # mutual information algorithm
 from sklearn.metrics.pairwise import euclidean_distances as dist
@@ -38,7 +39,7 @@ mutual_info = lambda x, y, bins : mutual_info_score(None,
                                                     contingency=np.histogram2d(x, y, bins)[0])
 
 MI = lambda x, tmax : [mutual_info(x[i + 1 :], x[: -(i + 1)], 100) for i in range(tmax - 1)]
-
+mad = lambda x, medianX : np.median(np.abs(x-medianX))
 
 def fnn(data, m):
   """
@@ -175,14 +176,20 @@ def create_db(data_dir, info_dir=""):
     rmssd = np.sqrt(np.mean(RR_diff**2))  #Take the square root of the mean of the list of squared differences
 
     x = np.multiply(RR[1:-1]-RR[:-2], RR[1:-1]-RR[2:]) # we have a turning point when x>0
-    tpr = len(x[x>0.]) / len(x) # turning point ratio (randomness index)
+    turning_point_ratio = lambda w : len(w[w>0.]) / len(w) # turning point ratio (randomness index)
+    tpr = turning_point_ratio(x)
     x = np.multiply(RR_diff[1:-1]-RR_diff[:-2], RR_diff[1:-1]-RR_diff[2:]) #same but with RR_diff instead of RR
-    tpr_RR_diff = len(x[x>0.]) / len(x)
+    tpr_RR_diff = turning_point_ratio(x)
     pnn20 = len(RR_diff[RR_diff > 20.]) / len(RR_diff)  # percentage of RR_diff > 20 milliseconds
     pnn50 = len(RR_diff[RR_diff > 50.]) / len(RR_diff)  # percentage of RR_diff > 50 milliseconds
 
-    mad = np.median(np.abs(RR - np.median(RR)))
-
+    medianRR = np.median(RR)
+    madRR = mad(RR, medianRR)
+    
+    Rpeakvalues = sign[final_peaks]
+    AA = np.diff(Rpeakvalues, n=1, axis=0)
+    medianAA = np.median(AA)
+    madAA = mad(AA, medianAA)
 
     # compute frequency domain measurements
     new_range = np.linspace(0, len(RR), len(RR)*100)  # resampling data at higher frequency (x100)
@@ -195,15 +202,21 @@ def create_db(data_dir, info_dir=""):
     lf = np.trapz(abs(RR_fft[(freq >= .04) & (freq <= .15)]))  # Low Frequency is related to short-term blood pressure regulation
     hf = np.trapz(abs(RR_fft[(freq > .15) & (freq <= .4 )]))  # High Frequency is related to breathing
 
-
     # other features
-    entropy = sum(entr(RR/sum(RR)))  # signal special-entropy
+    entropyRR = sum(entr(RR/sum(RR)))  # signal special-entropy
 
     tau_max = 400  #  keep an eye on. probably must be < 439 (file 1380 is the shortest)
     mi = MI(sign, tau_max)  # mutual information
     mi_t, mi_avg = pr.m_avg(np.arange(0, len(mi)), mi, 100)
     opt_delay = mt[np.argmin(mi_avg)]
     embedim = fnn(sign, 20)
+    skewRR = skew(RR)
+    kurtRR = kurtosis(RR)
+    skewAA = skew(AA)
+    kurtAA = kurtosis(AA)
+    meanAA = np.mean(AA)
+    stddevAA = np.std(AA)
+    corrRRAA, twotailedPvalue_corrRRAA = pearsonr(RR, AA)
 
     features[f] = {"sex" : info.Sex.values.item(),
                    "age" : info.Age.values.item(),
@@ -222,14 +235,27 @@ def create_db(data_dir, info_dir=""):
                    "tpr_RR_diff" : tpr_RR_diff,
                    "pnn20" : pnn20,
                    "pnn50" : pnn50,
-                   "mad" : mad,
+                   "medianRR" : medianRR,
+                   "madRR" : madRR,
                    "lf" : lf,
                    "hf" : hf,
-                   "entropy" : entropy,
+                   "skewnessRR" : skewRR,
+                   "kurtosisRR" : kurtRR, 
+                   "entropyRR" : entropyRR,
                    "opt_delay" : opt_delay,
                    "embedim" : embedim,
                    "time" : time.tolist(),
-                   "signal" : sign.tolist()
+                   "signal" : sign.tolist(),
+                   "Rpeakvalues" : Rpeakvalues.tolist(),
+                   "AA" : AA.tolist(),
+                   "medianAA" : medianAA,
+                   "madAA" : madAA,
+                   "skewnessAA" : skewAA,
+                   "kurtosisAA" : kurtAA, 
+                   "meanAA" : meanAA,
+                   "std_devAA" : stddevAA,
+                   "corrRRAA" : corrRRAA,
+                   "corrRRAA_Pvalue" : twotailedPvalue_corrRRAA
                    }
 
   # saving data on file cardio.json
