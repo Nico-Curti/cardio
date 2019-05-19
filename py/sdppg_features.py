@@ -84,7 +84,7 @@ def features_from_sdppg(t, signal, flip=True, spline=True, f=100):
     signal: 1D array-like of float; the measured PPG signal
     flip: bool (default=True); should the signal be flipped?
     spline: bool (default=True); use the cubic spline interpolation of signal instead of signal
-    f: int (default=100); factor used to compute the new number of points if spline==True : the length of the splined signal will be len(t)*l
+    f: int (default=100); factor used to compute the new number of points if spline==True : the length of the splined signal will be len(t)*f
 
     NOTES: t and signal must have the same length; t must be monotonic and positive
 
