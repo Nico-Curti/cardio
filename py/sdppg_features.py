@@ -73,7 +73,8 @@ def find_next_a(sdppg, zero_crossing, start):
     return max1, k
 
 
-def features_from_sdppg(t, signal, flip=True, spline=True, f=100):
+def features_from_sdppg(t, signal, normalise=True, flip=True, 
+                        spline=True, f=100):
     """
     Find the a, b, c, d, e parameters for a PPG signal through the normalised
     spline of its second derivative.
@@ -82,6 +83,7 @@ def features_from_sdppg(t, signal, flip=True, spline=True, f=100):
     ----
     t: 1D array-like of float; the time points at which the signal has been measured
     signal: 1D array-like of float; the measured PPG signal
+    normalise: bool(default=True); if True, normalise SDPPG and its second derivative
     flip: bool (default=True); should the signal be flipped?
     spline: bool (default=True); use the cubic spline interpolation of signal instead of signal
     f: int (default=100); factor used to compute the new number of points if spline==True : the length of the splined signal will be len(t)*f
@@ -108,8 +110,9 @@ def features_from_sdppg(t, signal, flip=True, spline=True, f=100):
         sdppg = spline_sdppg
         fdppg = spline_fdppg
     # normalisation
-    sdppg /= np.max(np.abs(sdppg))
-    fdppg /= np.max(np.abs(fdppg))
+    if normalise:
+        sdppg /= np.max(np.abs(sdppg))
+        fdppg /= np.max(np.abs(fdppg))
     # flip
     if flip:
         sdppg = np.flip(sdppg)
