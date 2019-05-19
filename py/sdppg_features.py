@@ -57,7 +57,6 @@ def find_next_a(sdppg, zero_crossing, start):
 
     def compute_max(x, z, n):  # TODO maybe out?
         return np.max(x[z[n]:z[n+1]])
-    # TODO check if there are enough elements in z before doing this
     z_len = len(zero_crossing)
     if k + 3 >= z_len:
         return np.nan, z_len
@@ -91,8 +90,8 @@ def features_from_sdppg(t, signal, flip=True, spline=True, f=100):
 
     Returns
     ----
-    dictionary containing 5 lists: a, b, c, d, e: each of them is a list of amplitudes for a, b, c, d, e peaks found in SDPPG.
-
+    sdppg: the sdppg computed from the PPG signal provided. It is the result of the spline if spline=True
+    features: dictionary containing 5 lists: a, b, c, d, e: each of them is a list of amplitudes for a, b, c, d, e peaks found in SDPPG
     For further information, please read:
         https://www.hindawi.com/journals/tswj/2013/169035/abs/
         https://ieeexplore.ieee.org/document/5412099
@@ -147,4 +146,5 @@ def features_from_sdppg(t, signal, flip=True, spline=True, f=100):
             e.append(next_e)
             i += 5  # sdppg[zero_crossing[i+4]: zero_crossing[i+5]] should be convex
 
-    return {'a': a, 'b': b, 'c': c, 'd': d, 'e': e}  # return a dictionary
+    features = {'a': a, 'b': b, 'c': c, 'd': d, 'e': e}  
+    return sdppg, features  # return sdppg and a dictionary

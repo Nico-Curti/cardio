@@ -22,7 +22,7 @@ def test_find_first_index_for_maximum_in_zero_crossing():
 
 def test_find_next_a():
     x = np.linspace(3, 0, 600)
-    t = np.linspace(0, 8*np.pi, 600) 
+    t = np.linspace(0, 8*np.pi, 600)
     s = np.sin(t)*x
     z = [0] + [int(len(s)/i) for i in np.arange(8, 0, -1)]
     a, k = sdppg_features.find_next_a(s, z, 0)
@@ -32,9 +32,11 @@ def test_find_next_a():
 
 def test_features_from_sdppg():
     x = np.linspace(3, 0, 600)
-    t = np.linspace(0, 8*np.pi, 600) 
+    t = np.linspace(0, 8*np.pi, 600)
     s = np.sin(t)*x
-    f = sdppg_features.features_from_sdppg(t, s)
+    q = 100
+    sdppg, f = sdppg_features.features_from_sdppg(t, s, f=100)
+    assert len(sdppg) == q*len(s)
     assert len(f) == 5
     for _, __ in zip(list(f)[:], list(f)[1:]):
         assert len(f[_]) == len(f[__])
