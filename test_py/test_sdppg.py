@@ -47,12 +47,19 @@ def test_features_from_sdppg_non_def_param():
   x = np.linspace(3, 0, 600)
   t = np.linspace(0, 8*np.pi, 600)
   s = np.sin(t)*x
-  q = 100
   sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=False,
                                                 spline=False)
   assert len(sdppg) == len(s)
   assert np.isclose(max(abs(sdppg)), 1) == False
 
+def test_features_from_sdppg_b_res():
+  x = np.linspace(3, 0, 600)
+  t = np.linspace(0, 8*np.pi, 600)
+  s = np.sin(t)*x
+  sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=False,
+                                                spline=False)
+  for _ in f['b']:
+    assert _ <= 0
 
 def test_sdppg_agi():
   a = [1, .8, .3]

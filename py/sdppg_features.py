@@ -93,7 +93,15 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   Returns
   ----
   sdppg: the sdppg computed from the PPG signal provided. It is the result of the spline if spline=True
-  features: dictionary containing 5 lists: a, b, c, d, e: each of them is a list of amplitudes for a, b, c, d, e peaks found in SDPPG
+  features: dictionary containing 5 lists: a, b, c, d, e: each of them is a np array of the "waves" a, b, c, d, e found in SDPPG
+
+  NOTES:
+    a is the initial positive wave
+    b is early negative wave (we suppose b < 0)
+    c is the re-upsloping wave
+    d is the re-downloping wave
+    e is the diastolic positive wave
+
   For further information, please read:
       https://www.hindawi.com/journals/tswj/2013/169035/abs/
       https://ieeexplore.ieee.org/document/5412099
@@ -130,24 +138,36 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   z_len = len(zero_crossing)
   while i < z_len:
     next_a, i = find_next_a(sdppg, zero_crossing, i)
-    if i + 4 >= z_len:
-      break
+    next_b = 1.
+    while next_b > 0:
+      if i + 1 >= z_len:  # to be certain we have enough elements in the array
+        break
+      next_b = np.min(sdppg[zero_crossing[i]:zero_crossing[i+1]])
+      if next_b > 0:
+        i += 2
 
-    next_b = np.min(sdppg[zero_crossing[i]:zero_crossing[i+1]])
+    if i + 4 >= z_len: # to be certain we have enough elements to find the other waves
+      break
+    # next_b = np.min(sdppg[zero_crossing[i]:zero_crossing[i+1]])
     next_c = np.max(sdppg[zero_crossing[i+1]:zero_crossing[i+2]])
     next_d = np.min(sdppg[zero_crossing[i+2]:zero_crossing[i+3]])
     next_e = np.max(sdppg[zero_crossing[i+3]:zero_crossing[i+4]])
     # No need to check c: it's the next maximum after a; always < a
     if next_e >= next_a:
       i += 3  # Find the next 'a' after the bad region due to false e
-  else:
-    a.append(next_a)
-    b.append(next_b)
-    c.append(next_c)
-    d.append(next_d)
-    e.append(next_e)
-    i += 5  # sdppg[zero_crossing[i+4]: zero_crossing[i+5]] should be convex
-
+    else:
+      a.append(next_a)
+      b.append(next_b)
+      c.append(next_c)
+      d.append(next_d)
+      e.append(next_e)
+      i += 5  # sdppg[zero_crossing[i+4]: zero_crossing[i+5]] should be a minimum
+  # convert to numpy array
+  a = np.asarray(a)
+  b = np.asarray(b)
+  c = np.asarray(c)
+  d = np.asarray(d)
+  e = np.asarray(e)
   features = {'a': a, 'b': b, 'c': c, 'd': d, 'e': e}
   return sdppg, features  # return sdppg and a dictionary
 
