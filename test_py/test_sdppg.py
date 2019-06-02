@@ -35,12 +35,22 @@ def test_features_from_sdppg():
   t = np.linspace(0, 8*np.pi, 600)
   s = np.sin(t)*x
   q = 100
-  sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, f=100)
+  sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, f=q)
   assert len(sdppg) == q*len(s)
   assert np.isclose(max(abs(sdppg)), 1, atol=1e-16)
-  assert len(f) == 5
+
+
+def test_dictionary_returned_from_features_from_sdppg():
+  x = np.linspace(3, 0, 600)
+  t = np.linspace(0, 8*np.pi, 600)
+  s = np.sin(t)*x
+  q = 100
+  sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, f=q)
+  assert len(f) == 6  # "a", "b", "c", "d", "e", "AGI"
   for _, __ in zip(list(f)[:], list(f)[1:]):
     assert len(f[_]) == len(f[__])
+  keys = ['a', 'b', 'c', 'd', 'e', 'AGI']
+  assert keys == list(f.keys())
 
 
 def test_features_from_sdppg_non_def_param():

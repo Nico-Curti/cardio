@@ -73,6 +73,36 @@ def find_next_a(sdppg, zero_crossing, start):
   return max1, k
 
 
+def sdppg_agi(a, b, c, d, e):
+  """
+  Compute the ageing index (AGI) from the features (a, b, c, d, e) extracted
+  from the SDPPG approach. The formula is (b-c-d-e)/a. The feature can be obtained through
+  features_from_sdppg.
+
+  Parameters
+  ----
+  a: float; array-like of float; feature 'a' extracted from the sdppg approach.
+  b: float; array-like of float; feature 'b' extracted from the sdppg approach.
+  c: float; array-like of float; feature 'c' extracted from the sdppg approach.
+  d: float; array-like of float; feature 'd' extracted from the sdppg approach.
+  e: float; array-like of float; feature 'e' extracted from the sdppg approach.
+  Returns
+  ----
+  AGI: numpy array of floats; the ageing index computed for each element.
+
+  For further reading:
+      https://www.hindawi.com/journals/tswj/2013/169035/abs/
+      https://ieeexplore.ieee.org/document/5412099
+  """
+  a_ = np.asarray(a, dtype=float)
+  b_ = np.asarray(b, dtype=float)
+  c_ = np.asarray(c, dtype=float)
+  d_ = np.asarray(d, dtype=float)
+  e_ = np.asarray(e, dtype=float)
+  AGI = (b_-c_-d_-e_)/a_
+  return AGI
+
+
 def features_from_sdppg(t, signal, normalise=True, flip=True,
                         spline=True, f=100):
   """
@@ -93,7 +123,7 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   Returns
   ----
   sdppg: the sdppg computed from the PPG signal provided. It is the result of the spline if spline=True
-  features: dictionary containing 5 lists: a, b, c, d, e: each of them is a np array of the "waves" a, b, c, d, e found in SDPPG
+  features: dictionary containing 6 numpy array: a, b, c, d, e (each of them is a np array of the respective "wave" fount in the SDPPG), and the AGI index (AGI), computed for each element of the array
 
   NOTES:
     a is the initial positive wave
@@ -168,35 +198,6 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   c = np.asarray(c)
   d = np.asarray(d)
   e = np.asarray(e)
-  features = {'a': a, 'b': b, 'c': c, 'd': d, 'e': e}
+  agi = sdppg_agi(a, b, c, d, e)
+  features = {'a': a, 'b': b, 'c': c, 'd': d, 'e': e, 'AGI': agi}
   return sdppg, features  # return sdppg and a dictionary
-
-
-def sdppg_agi(a, b, c, d, e):
-  """
-  Compute the ageing index (AGI) from the features (a, b, c, d, e) extracted
-  from the SDPPG approach. The formula is (b-c-d-e)/a. The feature can be obtained through
-  features_from_sdppg.
-
-  Parameters
-  ----
-  a: float; array-like of float; feature 'a' extracted from the sdppg approach.
-  b: float; array-like of float; feature 'b' extracted from the sdppg approach.
-  c: float; array-like of float; feature 'c' extracted from the sdppg approach.
-  d: float; array-like of float; feature 'd' extracted from the sdppg approach.
-  e: float; array-like of float; feature 'e' extracted from the sdppg approach.
-  Returns
-  ----
-  AGI: numpy array of floats; the ageing index computed for each element.
-
-  For further reading:
-      https://www.hindawi.com/journals/tswj/2013/169035/abs/
-      https://ieeexplore.ieee.org/document/5412099
-  """
-  a_ = np.asarray(a, dtype=float)
-  b_ = np.asarray(b, dtype=float)
-  c_ = np.asarray(c, dtype=float)
-  d_ = np.asarray(d, dtype=float)
-  e_ = np.asarray(e, dtype=float)
-  AGI = (b_-c_-d_-e_)/a_
-  return AGI
