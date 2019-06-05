@@ -115,7 +115,7 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   signal: 1D array-like of float; the measured PPG signal
   normalise: bool(default=True); if True, normalise SDPPG and its second derivative
   flip: bool (default=True); should the signal be flipped?
-  spline: bool (default=True); use the cubic spline interpolation of signal instead of signal
+  spline: bool (default=True); use the cubic spline interpolation of signal instead of signal. BEWARE of splines: they can change the maxima and minima value and position!
   f: int (default=100); factor used to compute the new number of points if spline==True : the length of the splined signal will be len(t)*f
 
   NOTES: t and signal must have the same length; t must be monotonic and positive
@@ -123,7 +123,7 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   Returns
   ----
   sdppg: the sdppg computed from the PPG signal provided. It is the result of the spline if spline=True
-  features: dictionary containing 6 numpy array: a, b, c, d, e (each of them is a np array of the respective "wave" fount in the SDPPG), and the AGI index (AGI), computed for each element of the array
+  features: dictionary containing 10 numpy array: a, b, c, d, e (each of them is a np array of the respective "wave" fount in the SDPPG), the AGI index (AGI) computed for each element of the array, and the time differences between the "waves" a and b, b and c, c and d, and d and e (t_ab, t_bc, t_cd, t_de).
 
   NOTES:
     a is the initial positive wave
@@ -147,6 +147,8 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
     spline_fdppg = spline_fdppg(newt)
     sdppg = spline_sdppg
     fdppg = spline_fdppg
+  else:
+    newt = np.asarray(t)
   # normalisation
   if normalise:
     sdppg /= np.max(np.abs(sdppg))
@@ -155,6 +157,8 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   if flip:
     sdppg = np.flip(sdppg)
     fdppg = np.flip(fdppg)
+    newt = np.flip(newt)
+
   # find the zero crossings
   intermediate_step = fdppg[0:-1]*fdppg[1:]
   zero_crossing = np.where(intermediate_step < 0.)[0]
@@ -165,14 +169,23 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   c = []
   d = []
   e = []
+  t_a = []
+  t_b = []
+  t_c = []
+  t_d = []
+  t_e = []
   z_len = len(zero_crossing)
   while i < z_len:
     next_a, i = find_next_a(sdppg, zero_crossing, i)
+    if i >= z_len:  # to be certain i is not out of bounds. See find_next_a
+      break
+    next_t_a = np.argmax(sdppg[zero_crossing[i-1]:zero_crossing[i]]) + zero_crossing[i-1]
     next_b = 1.
     while next_b > 0:
       if i + 1 >= z_len:  # to be certain we have enough elements in the array
         break
       next_b = np.min(sdppg[zero_crossing[i]:zero_crossing[i+1]])
+      next_t_b = np.argmin(sdppg[zero_crossing[i]:zero_crossing[i+1]]) + zero_crossing[i]
       if next_b > 0:
         i += 2
 
@@ -180,8 +193,11 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
       break
     # next_b = np.min(sdppg[zero_crossing[i]:zero_crossing[i+1]])
     next_c = np.max(sdppg[zero_crossing[i+1]:zero_crossing[i+2]])
+    next_t_c = np.argmax(sdppg[zero_crossing[i+1]:zero_crossing[i+2]]) + zero_crossing[i+1]
     next_d = np.min(sdppg[zero_crossing[i+2]:zero_crossing[i+3]])
+    next_t_d = np.argmin(sdppg[zero_crossing[i+2]:zero_crossing[i+3]]) + zero_crossing[i+2]
     next_e = np.max(sdppg[zero_crossing[i+3]:zero_crossing[i+4]])
+    next_t_e = np.argmax(sdppg[zero_crossing[i+3]:zero_crossing[i+4]]) + zero_crossing[i+3]
     # No need to check c: it's the next maximum after a; always < a
     if next_e >= next_a:
       i += 3  # Find the next 'a' after the bad region due to false e
@@ -191,13 +207,29 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
       c.append(next_c)
       d.append(next_d)
       e.append(next_e)
+      t_a.append(next_t_a)
+      t_b.append(next_t_b)
+      t_c.append(next_t_c)
+      t_d.append(next_t_d)
+      t_e.append(next_t_e)
       i += 5  # sdppg[zero_crossing[i+4]: zero_crossing[i+5]] should be a minimum
+
   # convert to numpy array
   a = np.asarray(a)
   b = np.asarray(b)
   c = np.asarray(c)
   d = np.asarray(d)
   e = np.asarray(e)
+  t_a = newt[t_a]
+  t_b = newt[t_b]
+  t_c = newt[t_c]
+  t_d = newt[t_d]
+  t_e = newt[t_e]
+  t_ab = np.abs(t_a-t_b)
+  t_bc = np.abs(t_b-t_c)
+  t_cd = np.abs(t_c-t_d)
+  t_de = np.abs(t_d-t_e)
   agi = sdppg_agi(a, b, c, d, e)
-  features = {'a': a, 'b': b, 'c': c, 'd': d, 'e': e, 'AGI': agi}
+  features = {'a': a, 'b': b, 'c': c, 'd': d, 'e': e, 'AGI': agi,
+              't_ab': t_ab, 't_bc': t_bc, 't_cd': t_cd, 't_de': t_de}
   return sdppg, features  # return sdppg and a dictionary

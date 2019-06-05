@@ -35,7 +35,7 @@ def test_features_from_sdppg():
   t = np.linspace(0, 8*np.pi, 600)
   s = np.sin(t)*x
   q = 100
-  sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, f=q)
+  sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, spline=True, f=q)
   assert len(sdppg) == q*len(s)
   assert np.isclose(max(abs(sdppg)), 1, atol=1e-16)
 
@@ -45,11 +45,11 @@ def test_dictionary_returned_from_features_from_sdppg():
   t = np.linspace(0, 8*np.pi, 600)
   s = np.sin(t)*x
   q = 100
-  sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, f=q)
-  assert len(f) == 6  # "a", "b", "c", "d", "e", "AGI"
+  sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, spline=True, f=q)
+  assert len(f) == 10  # "a", "b", "c", "d", "e", "AGI", "t_ab", "t_bc", "t_cd", "t_de"
   for _, __ in zip(list(f)[:], list(f)[1:]):
     assert len(f[_]) == len(f[__])
-  keys = ['a', 'b', 'c', 'd', 'e', 'AGI']
+  keys = ['a', 'b', 'c', 'd', 'e', 'AGI', 't_ab', 't_bc', 't_cd', 't_de']
   assert keys == list(f.keys())
 
 
