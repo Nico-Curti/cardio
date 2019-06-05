@@ -164,16 +164,8 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   zero_crossing = np.where(intermediate_step < 0.)[0]
   # find starting position
   i = find_first_index_for_maximum_in_zero_crossing(sdppg, zero_crossing)
-  a = []
-  b = []
-  c = []
-  d = []
-  e = []
-  t_a = []
-  t_b = []
-  t_c = []
-  t_d = []
-  t_e = []
+  a, b, c, d, e = [], [], [], [], []
+  t_a, t_b, t_c, t_d, t_e = [], [], [], [], []
   z_len = len(zero_crossing)
   while i < z_len:
     next_a, i = find_next_a(sdppg, zero_crossing, i)
