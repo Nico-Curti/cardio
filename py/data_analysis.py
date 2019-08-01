@@ -1,284 +1,220 @@
-#!/usr/bin/env python3
+
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Nov  9 14:32:44 2018
 
-@author: lyro
-"""
-import json
-from os.path import basename
+# cardio stuff
+import clean_db
+
+# standard libraries
 import numpy as np
-from collections import Counter
-from operator import itemgetter
-from imblearn.under_sampling import RandomUnderSampler
 import matplotlib.pylab as plt
-import sklearn.cluster as skc
-from sklearn.metrics import classification_report, confusion_matrix
+from scipy.stats.stats import pearsonr, spearmanr, kendalltau
+from sklearn.linear_model import RidgeCV, LinearRegression, Ridge
+from sklearn.model_selection import KFold
 from sklearn.decomposition import PCA
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.svm import SVC
-from tpot import TPOTClassifier
-
-
-# loading database file
-with open('cardio.json', 'r') as file:
-  database = json.load(file)
-
-# containers for specific datas
-names = []
-sex = []
-age = []
-weight = []
-smoke = []
-afib = []
-rhythm = []
-quality = []
-RR = []
-bpm = []
-ibi = []
-sdnn = []
-sdsd = []
-rmssd = []
-tpr = []
-tpr_RR_diff = []
-pnn20 = []
-pnn50 = []
-mad = []
-lf = []
-hf = []
-entropy = []
-opt_delay = []
-embedim = []
-time = []
-signal = []
-
-
-#filling the containers with datas (eventually those with better quality)
-for d in database.items():
-#  if(d[1]['quality']>0.01):  # because quality is a defect index
-#    continue
-
-  if(d[1]['afib']==1): continue
-
-  names.append(basename(d[0]).split('_')[1])
-  sex.append(d[1]['sex'])
-  age.append(d[1]['age'])
-  weight.append(d[1]['weight'])
-  smoke.append(d[1]['smoke'])
-  afib.append(d[1]['afib'])
-  rhythm.append(d[1]['rhythm'])
-  quality.append(d[1]['quality'])
-  RR.append(d[1]['RR'])
-  bpm.append(d[1]['bpm'])
-  ibi.append(d[1]['ibi'])
-  sdnn.append(d[1]['sdnn'])
-  sdsd.append(d[1]['sdsd'])
-  rmssd.append(d[1]['rmssd'])
-  tpr.append(d[1]['tpr'])
-  tpr_RR_diff.append(d[1]['tpr_RR_diff'])
-  pnn20.append(d[1]['pnn20'])
-  pnn50.append(d[1]['pnn50'])
-  mad.append(d[1]['mad'])
-  lf.append(d[1]['lf'])
-  hf.append(d[1]['hf'])
-  entropy.append(d[1]['entropy'])
-  opt_delay.append(d[1]['opt_delay'])
-  embedim.append(d[1]['embedim'])
-  time.append(d[1]['time'])
-  signal.append(d[1]['signal'])
-
-# choosing datas to work with
-datas = np.vstack((quality, bpm, ibi, sdnn, sdsd, rmssd, tpr, tpr_RR_diff,
-                   pnn20, pnn50, mad, lf, hf, entropy, opt_delay, embedim)).T
-
-labels = age  # choosing labels to work with
-# mean age is 44.869249394673126
-
-#%%
-# eventually random undersampling to have even samples per clusters
-
-
-rus = RandomUnderSampler(random_state=42)
-
-datas_unders, labels_unders = rus.fit_sample(datas, labels)
-
-print('Undersampled dataset shape {}'.format(Counter(labels_unders)))
-
+from sklearn.preprocessing import StandardScaler
 
 # %%
-# plotting scatter distributions
-#
+# Load already cleaned db and convert to dataframe
+f = "db_after_notch.json"
+df = clean_db.db_to_dataframe(f)
 
-
-color = []
-X = []
-Y = []
-feature1 = mad
-feature2 = quality
-
-for a, x, y in zip(labels, feature1, feature2):
-  if(a==1):
-    color.append('r')
-  else:
-    color.append('b')
-
-  X.append(x)
-  Y.append(y)
-
-figure, ax = plt.subplots()
-ax.set_yscale("log")
-ax.set_ylim(1e-7, 1)
-ax.scatter(X, Y, c=color, s=1)
-
+# remove array features (not cleaned before because they were used for double
+# gaussian fitting)
+df = df.drop(columns=['RR', 'AA', 'Rpeakvalues', 'time', 'signal'])
+df = df.astype(float)
 
 # %%
-# plotting histograms distributions
+# outlier removal
+
+# list of features where to perform outlier removal
+s = ['weight', 'length', 'bmi', 'lf', 'hf', 'c', 'bpm', 'sdsd', 'rmssd',
+     'entropyRR', 'opt_delay', 'pnn20', 'medianRR', 'medianAA', 'skewnessRR',
+     'kurtosisRR', 'skewnessAA', 'madRR', 'madAA', 'meanAA', 'diff_mad',
+     'dist_mad', 'n_diff_mad', 'n_dist_mad', 'diff_mad_all', 'dist_mad_all',
+     'n_dist_mad_all', 'n_diff_mad_all', 'diff_std', 'dist_std', 'n_diff_std',
+     'n_dist_std', 'diff_std_all', 'dist_std_all', 'n_dist_std_all',
+     'n_diff_std_all']
+
+# NOTE: outlier removal performed over every feature basically empties the db
+# highlighting really sparse data, we decided which feature to use trying to
+# keep at least 1000 patients and raising as much as possible the score
 
 
-X1 = []
-X0 = []
-feature = mad
-label = age
+# a copy of the db is needed if we want to execute more than once this cell
+# without reloading the json
+d = df
+outlier_free = d
 
-for lbl, f in zip(label, feature):
-  upper_limit = 90
-  lower_limit = 60
-  l = int(lbl)
-  if(lower_limit <= l <= upper_limit):
-    X0.append(f)
-
-#X1 = np.asarray(X1)/len(X1)
-#X0 = np.asarray(X0)/len(X0)
-fig, ax = plt.subplots(1, 1, sharex=True)
-
-#bins = np.linspace(min(feature), max(feature), 100)
-bins = np.linspace(0, 120, 200)
-
-ax.hist(X0, bins=bins, label=str(lower_limit)+" < age < "+str(upper_limit))
-ax.set_title("tpr")
-ax.set_ylim(0,100)
-ax.legend()
-
-
-# %%
-# train-test splitting
-
-
-#Splitting into a training set and a test set using a stratified k fold
-datas_train, datas_test, labels_train, labels_test = train_test_split(
-    datas_unders, labels_unders, test_size=0.25, random_state=42)
-print('train {}'.format(Counter(labels_train)))
-print('test {}'.format(Counter(labels_test)))
-
+# number of mad kept on each tail from the median of the distribution
+Nmad = 4.
+for _ in s:
+  # mean and mad computed from the starting distributions
+  m = np.median(d[_])
+  mad = np.median(np.abs(d[_] - m))
+  outlier_free = outlier_free[np.logical_and(outlier_free[_] > m - Nmad*mad,
+                                             outlier_free[_] < m + Nmad*mad)]
+d = outlier_free
 
 # %%
-# PCA
 
+# choose which threshold to apply to further analysis data
+# IMPORTANT: quality is a bad quality index, so the higher the worse
+bad_quality_threshold = .01
+d = d[d.quality < bad_quality_threshold]
 
-# plotting explained variance
-Pca = PCA().fit(datas_unders)
+# %%
+
+# if you prefer you can set a threshold on the correlation needed to select a
+# feature for the downcoming analysis. we preferred to use all the features
+correlation_threshold = 0.0
+
+c = d.corr(method='pearson')
+Features = c[abs(c.age) > correlation_threshold]
+x = d[Features.index.values]
+
+# from now on, x is the db containing the data and target is the series
+# containing patients' ages
+target = x.age
+x = x.drop(columns='age')
+
+# %%
+
+# Scale before PCA
+stdsc = StandardScaler()
+standardized_x = stdsc.fit_transform(x)
+
+# %%
+
+# plotting explained variance and setting number of components to use by
+# choosing a cumulative explained variance threshold
+Pca = PCA().fit(standardized_x)
+
 f, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
+axis_x = np.arange(1, Pca.n_components_+1)
 
+ty = 0.99
+tx = np.where(np.cumsum(Pca.explained_variance_ratio_) > ty)[0][1]
+
+# visualizing the thersholds and the explained variance
 ax1.set_title("PCA")
-ax1.plot(np.cumsum(Pca.explained_variance_ratio_))
-ax1.set_ylabel('cumulative explained variance')
+ax1.plot(axis_x, 100*np.cumsum(Pca.explained_variance_ratio_))
+ax1.plot([tx, tx], [20, 100], 'r-.')
+ax1.plot([0, Pca.n_components_], [100*ty, 100*ty], 'k-.',
+         label="explained variance threshold = "+str(ty*100)+"%")
 
-ax2.plot(Pca.explained_variance_ratio_)
+ax2.plot(axis_x, 100*Pca.explained_variance_ratio_)
+ax2.plot([tx, tx], [-1, 100*Pca.explained_variance_ratio_[0]], 'r-.',
+         label='component threshold = '+str(tx))
 
-ax2.set_xlabel('number of components')
-ax2.set_ylabel('explained variance')
+ax1.set_ylabel('cumulative \n explained variance (%)')
+ax2.set_xlabel('number of components', fontsize=14)
+ax2.set_ylabel('explained variance (%)', fontsize=14)
+
+ax1.set_xlim(1,  Pca.n_components_+1)
 
 ax1.grid(True)
 ax2.grid(True)
+
+ax1.legend(loc=3)
+ax2.legend()
+
 plt.show()
 
+# %%
 
-# making PCA
-number_of_components = 2
+Pca_with_n_components = PCA(n_components=tx)
+pca_x = Pca_with_n_components.fit_transform(standardized_x)
 
-# pca for train-test splitted datas
-pca_tt = PCA(n_components=number_of_components, svd_solver='randomized',
-             whiten=True).fit(datas_train)
-datas_train_pca = pca_tt.transform(datas_train)
-datas_test_pca = pca_tt.transform(datas_test)
+a = np.linspace(100, 300, 200)  # to tune properly if you change anything above
+ridge = RidgeCV(alphas=a, cv=10)
+ridge.fit(pca_x, target)
 
-# pca for whole datas
-pca = PCA(n_components=number_of_components, svd_solver='randomized',
-          whiten=True).fit(datas_unders)
-datas_pca = pca.transform(datas_unders)
+predicted = ridge.predict(pca_x)
 
+# computing some statistical measures
+stat_pearson = pearsonr(predicted, target)
+stat_spearman = spearmanr(predicted, target)
+stat_kendall = kendalltau(predicted, target)
 
-# plotting 2 pca components
-component_1 = list(map(itemgetter(0), datas_pca))
-component_2 = list(map(itemgetter(1), datas_pca))
-co = []
-compx = []
-compy = []
+print("ridge alpha: ", ridge.alpha_)
+print("corr: ", stat_pearson)
+print("rho: ", stat_spearman)
+print("tau: ", stat_kendall)
+print("score: ", ridge.score(pca_x, target))
 
-for l in labels_train:
-    if(l==0.):
-        co.append('r')
-    else:
-        co.append('b')
+# needed to work properly
+predicted = predicted.reshape(-1, 1)
 
-fig, ax = plt.subplots()
-ax.scatter(component_1, component_2, s=1, c=co)
+# A linear regression is needed to visually compare predicted age vs real age
+LR = LinearRegression().fit(predicted, target)
+predicted = LR.predict(predicted)
 
+# needed to work properly
+predicted = predicted.reshape(-1, 1)
+
+# plot
+plt.scatter(target, predicted, s=3, color="black")
+plt.title("Regression after PCA")
+plt.plot([min(target), max(target)],
+         [min(target)*LR.coef_[0]+LR.intercept_,
+          max(target)*LR.coef_[0]+LR.intercept_],
+         'r-.',
+         label="Regression line Y = " + str(LR.coef_[0])[:5] + "*X + " +
+               str(LR.intercept_)[:6])
+
+plt.xlabel("Real age (years)")
+plt.ylabel("Predicted age (years)")
+
+plt.grid()
+plt.legend()
 
 # %%
-# Unsupervised learning
+
+kf = KFold(n_splits=10, shuffle=True, random_state=1000000000)
+final_alpha = ridge.alpha_  # fixing alpha
+
+# container for pearson r, spearman rho, kendall tau and score for each fold
+corrt, scoret, rho, tau = [], [], [], []
+
+for train_index, test_index in kf.split(pca_x, target):
+  # training
+  new_ridge = Ridge(alpha=final_alpha)
+  new_ridge.fit(pca_x[train_index], target.iloc[train_index])
+  new_predicted = new_ridge.predict(pca_x[test_index])
+
+  # measuring performances
+  corrt.append(pearsonr(new_predicted, target.iloc[test_index]))
+  rho.append(spearmanr(new_predicted, target.iloc[test_index]))
+  tau.append(kendalltau(new_predicted, target.iloc[test_index]))
+  scoret.append(new_ridge.score(pca_x[test_index], target.iloc[test_index]))
+
+# mean values over the 10-fold
+corrt_ = np.mean(corrt, axis=0)[0]
+scoret_ = np.mean(scoret)
+rho_ = np.mean(rho, axis=0)[0]
+tau_ = np.mean(tau, axis=0)[0]
 
 
-predicted_labels = skc.SpectralClustering(random_state=4,
-                                          n_clusters=2).fit_predict(datas_unders)
+# printing reults of mean and max for each list
+print("   measure      mean        max    (p-value of max)")
+print("R^2:          %2.5f,    %2.5f" % (scoret_, max(scoret)))
+print("Pearson R:    %2.5f,    %2.5f     %2.7f" % (corrt_, max(corrt)[0], max(corrt)[1]))
+print("Spearman Rho: %2.5f,    %2.5f     %2.7f" % (rho_, max(rho)[0], max(rho)[1]))
+print("Kendall Tau:  %2.5f,    %2.5f     %2.7f" % (tau_, max(tau)[0], max(tau)[1]))
 
-# labels inversion (in case we need to exchange zeros with ones and viceversa)
-#predicted_labels = abs(np.asarray(predicted_labels) - 1)
-
-print(Counter(predicted_labels))
-print(classification_report(labels_unders, predicted_labels))
-
-
-# %%
-# Supervised learning
-
-
-# Train a SVM classification model
-print("Fitting the classifier to the training set")
-param_grid = {'C': [1e4, 6e4, 1e5, 5e5, 9e2, 1e6, 4e3],
-              'gamma': [2e-5,1e-5,5e-6,1e-6,5e-7], }
-clf = GridSearchCV(SVC(kernel='rbf', class_weight='balanced'), param_grid, cv=3,
-                   verbose=3, return_train_score=True)
-
-clf = clf.fit(datas_train_pca, labels_train)
-
-print("Best estimator found by grid search:")
-print(clf.best_estimator_)
-print("more infos:")
-print(clf.cv_results_)
-print("more infos:")
-print(clf.best_score_)
-print("more infos:")
-print(clf.scorer_)
-print("more infos:")
-print(clf.best_index_)
+# OLD RESULTS
+# Pearson r
+#      mean                         (max, p-value of max)
+# 0.6871186240192718 (0.7774754922030191, 6.07521505515027e-27)
+# score
+#      mean                  max
+# 0.46468027461675787 0.59137684046488
 
 
-# Quantitative evaluation of the model quality on the test set
-print("Predicting labels on the test set")
-predicted_lbl = clf.predict(datas_pca)
-
-print(classification_report(labels_unders, predicted_lbl))
-print(confusion_matrix(labels_unders, predicted_lbl, labels=range(2)))
-
-
-# %%
-# TPOT
-
-
-tpot = TPOTClassifier(generations=100, population_size=100, max_time_mins=1000, n_jobs=-1, random_state=42, early_stop=5, verbosity=3)
-#tpot.fit(datas_train_pca, labels_train)  # if you want to use pca first
-tpot.fit(datas_train, labels_train)  # if you don't want to use pca first
-tpot.export('tpot_pipeline.py')
-print("SCORE:")
-print(tpot.score(datas_test, labels_test))
+# CURRENT RESULTS
+# Pearson r
+#      mean                         (max, p-value of max)
+# 0.7452870656680132 (0.8406409487826519, 1.0219843095920135e-40)
+# score
+#      mean                  max
+# 0.5490146030858843 0.6890449306017845
