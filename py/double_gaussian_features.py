@@ -47,7 +47,8 @@ db = db.replace('Active', 3
 
 def find_x_of_minima(time, signal):
   """
-  find index position of local minima under a certain moving threshold
+  find index position of local minima whose amplitude is under a certain
+  moving threshold
 
   Parameters
   ----
@@ -127,15 +128,15 @@ def features_from_dicrotic_notch(time, signal):
   total_beat_duration_list = []
   total_beat_height_list = []
 
-  # function to initialize the fitting parameters (to avoid wrong converging)
+  # function to initialize the fitting parameters (to avoid wrong convergence)
   def pre_gaus(x, y):
     x = np.asarray(x)
-    y = np.asarray(y)
+    y = np.asarray(y)-min(y)
 
     mean = sum(x * y) / sum(y)
     sigma = np.sqrt(sum(y * (x - mean)**2) / sum(y))
 
-    return [max(y), mean, sigma]
+    return [max(y)+min(y), mean, sigma]
 
   # function used in the fit
   def gaus(x, a1, m1, s1, a2, m2, s2):
@@ -155,11 +156,14 @@ def features_from_dicrotic_notch(time, signal):
     split = int(len(X)/2)
 
     try:
+
+      # NOTE the double "(" after np.concatenate is needed to work properly,
+      # since conatenate must work on a tuple in our case.
       parameters, errors = curve_fit(gaus, X, Y,
-                                     p0=np.concatenate(pre_gaus(X[:split],
+                                     p0=np.concatenate((pre_gaus(X[:split],
                                                                 Y[:split]),
                                                        pre_gaus(X[-split:],
-                                                                Y[-split:])))
+                                                                Y[-split:]))))
 
       parameter_list.append(parameters)
       total_beat_duration_list.append(max(X)-min(X))
@@ -186,7 +190,7 @@ heights = []
 
 for guy in range(len(db.age)):
   print(guy)
-  P, D, H = features_from_dictrotic_notch(db.time[guy], db.signal[guy])
+  P, D, H = features_from_dicrotic_notch(db.time[guy], db.signal[guy])
 
   notch_features.append(P)
   durations.append(D)
