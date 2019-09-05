@@ -80,6 +80,27 @@ def fnn(data, m):
 
 
 def create_db(data_dir, info_dir=""):
+  """
+  Create .json database for the PPG data from .txt files for PPG data and information.
+  The database is saved in the current directory under the name "cardio.json".
+
+  Parameters
+  ----
+  data_dir: string; the directory where the .txt data files must be fetched.
+  info_dir: string; the direcotry where the .txt info files must be fetched. Default=""
+
+  The function does not return anything.
+
+  Notes:
+    The files in info_dir and data_dir must be named as follows,
+    head_id_type.txt
+    where:
+      head is a string head without underscore
+      id is the id of the file (e.g. a number)
+      type is either data or info
+    Please note that each file in data_dir must have its corresponding file in
+    info_dir and vice versa.
+  """
   features = {}
 
   datas = sorted(glob.glob(join(data_dir, "*_data.txt")))
@@ -255,7 +276,12 @@ def create_db(data_dir, info_dir=""):
                    "meanAA" : meanAA,
                    "std_devAA" : stddevAA,
                    "corrRRAA" : corrRRAA,
-                   "corrRRAA_Pvalue" : twotailedPvalue_corrRRAA
+                   "corrRRAA_Pvalue" : twotailedPvalue_corrRRAA,
+                   'length': info.Length.values.item(),
+                   'city': info.City.values.item(),
+                   'country': info.Country.values.item(),
+                   'lifestyle': info.Lifestyle.values.item(),
+                   'class': info.Class.values.item()
                    }
 
   # saving data on file cardio.json
