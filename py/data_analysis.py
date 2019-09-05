@@ -43,7 +43,10 @@ df = df.replace('Active', 3
 
 # remove array features (not cleaned before because they were used for double
 # gaussian fitting)
-df = df.drop(columns=['RR', 'AA', 'Rpeakvalues', 'time', 'signal'])
+list_c = list(set(df.columns) & set(['RR', 'AA', 'Rpeakvalues', 'time', 'signal']))
+if len(list_c) != 0:
+  df = df.drop(columns=list_c)
+
 df = df.astype(float)
 
 # %%
