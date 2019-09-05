@@ -31,9 +31,13 @@ def test_find_next_a():
 
 
 def test_features_from_sdppg():
-  x = np.linspace(3, 0, 600)
-  t = np.linspace(0, 8*np.pi, 600)
-  s = np.sin(t)*x
+  # simulating a PPG signal as a sum of sinusoidal waves with frequences 1, 2, and 3 Hz
+  t = np.linspace(0, .5, 600)
+  w = 2*np.pi
+  v = np.asarray([1., 2., 3.])
+  s = 0
+  for f in v:
+    s += f**(-2)*np.sin(w*f*t)
   q = 100
   sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, spline=True, f=q)
   assert len(sdppg) == q*len(s)
@@ -41,9 +45,12 @@ def test_features_from_sdppg():
 
 
 def test_dictionary_returned_from_features_from_sdppg():
-  x = np.linspace(3, 0, 600)
-  t = np.linspace(0, 8*np.pi, 600)
-  s = np.sin(t)*x
+  t = np.linspace(0, .5, 600)
+  w = 2*np.pi
+  v = np.asarray([1., 2., 3.])
+  s = 0
+  for f in v:
+    s += f**(-2)*np.sin(w*f*t)
   q = 100
   sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=True, spline=True, f=q)
   assert len(f) == 10  # "a", "b", "c", "d", "e", "AGI", "t_ab", "t_bc", "t_cd", "t_de"
@@ -54,18 +61,24 @@ def test_dictionary_returned_from_features_from_sdppg():
 
 
 def test_features_from_sdppg_non_def_param():
-  x = np.linspace(3, 0, 600)
-  t = np.linspace(0, 8*np.pi, 600)
-  s = np.sin(t)*x
+  t = np.linspace(0, .5, 600)
+  w = 2*np.pi
+  v = np.asarray([1., 2., 3.])
+  s = 0
+  for f in v:
+    s += f**(-2)*np.sin(w*f*t)
   sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=False,
                                                 spline=False)
   assert len(sdppg) == len(s)
   assert np.isclose(max(abs(sdppg)), 1) == False
 
 def test_features_from_sdppg_b_res():
-  x = np.linspace(3, 0, 600)
-  t = np.linspace(0, 8*np.pi, 600)
-  s = np.sin(t)*x
+  t = np.linspace(0, .5, 600)
+  w = 2*np.pi
+  v = np.asarray([1., 2., 3.])
+  s = 0
+  for f in v:
+    s += f**(-2)*np.sin(w*f*t)
   sdppg, f = sdppg_features.features_from_sdppg(t, s, normalise=False,
                                                 spline=False)
   for _ in f['b']:

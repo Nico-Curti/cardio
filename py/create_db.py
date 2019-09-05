@@ -185,7 +185,7 @@ def create_db(data_dir, info_dir=""):
 
     medianRR = np.median(RR)
     madRR = mad(RR, medianRR)
-    
+
     Rpeakvalues = sign[final_peaks]
     AA = np.diff(Rpeakvalues, n=1, axis=0)
     medianAA = np.median(AA)
@@ -240,7 +240,7 @@ def create_db(data_dir, info_dir=""):
                    "lf" : lf,
                    "hf" : hf,
                    "skewnessRR" : skewRR,
-                   "kurtosisRR" : kurtRR, 
+                   "kurtosisRR" : kurtRR,
                    "entropyRR" : entropyRR,
                    "opt_delay" : opt_delay,
                    "embedim" : embedim,
@@ -251,7 +251,7 @@ def create_db(data_dir, info_dir=""):
                    "medianAA" : medianAA,
                    "madAA" : madAA,
                    "skewnessAA" : skewAA,
-                   "kurtosisAA" : kurtAA, 
+                   "kurtosisAA" : kurtAA,
                    "meanAA" : meanAA,
                    "std_devAA" : stddevAA,
                    "corrRRAA" : corrRRAA,
