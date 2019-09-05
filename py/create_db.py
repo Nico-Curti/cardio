@@ -100,6 +100,14 @@ def create_db(data_dir, info_dir=""):
       type is either data or info
     Please note that each file in data_dir must have its corresponding file in
     info_dir and vice versa.
+
+  Example
+  >>>data_file = "data"
+  >>>info_file = data_file
+  >>>create_db(data_file, info_file)
+    Processing head_1_data.txt
+    Processing head_2_data.txt
+    [...]
   """
   features = {}
 
