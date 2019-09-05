@@ -18,6 +18,29 @@ from sklearn.preprocessing import StandardScaler
 f = "db_after_notch.json"
 df = clean_db.db_to_dataframe(f)
 
+# %%
+
+# Clean file for further use
+db = clean_db.clean_db(df,
+                       drop_columns=['rhythm', 'city', 'country',
+                                     'filename', 'filenumber'],
+                       drop_na_in=['weight', 'tpr', 'madRR', 'medianRR',
+                                   'opt_delay', 'afib', 'age', 'sex', 'smoke',
+                                   'afib', 'bmi', 'lifestyle'],
+                       drop_zeroes_in=['weight', 'age', 'length'],
+                       quality_threshold=None, reset_index=True)
+
+# CONVERTING STRING LABELS TO ARBITRARY NUMERICAL VALUES
+db = db.replace('F', -1).replace('M', 1)
+db = db.replace('C1', 1).replace('C0', 0).replace('C3', 3).replace('C2', 2)
+db = db.replace('Active', 3
+                ).replace('Actief', 3
+                ).replace('Gemiddeld', 2
+                ).replace('Moderate', 2
+                ).replace('Sedentary', 1
+                ).replace('Weinig', 1)
+
+
 # remove array features (not cleaned before because they were used for double
 # gaussian fitting)
 df = df.drop(columns=['RR', 'AA', 'Rpeakvalues', 'time', 'signal'])
