@@ -15,13 +15,13 @@ from sklearn.preprocessing import StandardScaler
 
 # %%
 # Load already cleaned db and convert to dataframe
-f = "db_after_notch.json"
+f = "../cardio_final.json"
 df = clean_db.db_to_dataframe(f)
 
 # %%
 
 # Clean file for further use
-db = clean_db.clean_db(df,
+df = clean_db.clean_db(df,
                        drop_columns=['rhythm', 'city', 'country',
                                      'filename', 'filenumber'],
                        drop_na_in=['weight', 'tpr', 'madRR', 'medianRR',
@@ -31,9 +31,9 @@ db = clean_db.clean_db(df,
                        quality_threshold=None, reset_index=True)
 
 # CONVERTING STRING LABELS TO ARBITRARY NUMERICAL VALUES
-db = db.replace('F', -1).replace('M', 1)
-db = db.replace('C1', 1).replace('C0', 0).replace('C3', 3).replace('C2', 2)
-db = db.replace('Active', 3
+df = df.replace('F', -1).replace('M', 1)
+df = df.replace('C1', 1).replace('C0', 0).replace('C3', 3).replace('C2', 2)
+df = df.replace('Active', 3
                 ).replace('Actief', 3
                 ).replace('Gemiddeld', 2
                 ).replace('Moderate', 2
