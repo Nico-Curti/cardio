@@ -3,18 +3,12 @@
 
 # cardio stuff
 import clean_db
-import create_db
-import pre_process as pr
 import double_gaussian_features as dgf
 import sdppg_features
 
 # standard libraries
 import numpy as np
-from scipy.optimize import curve_fit
 from operator import itemgetter
-import pandas as pd
-import json
-import glob
 import sys, argparse
 
 if __name__ == '__main__':
@@ -297,4 +291,5 @@ if __name__ == '__main__':
   df['n_diff_mad_all'] = n_diff_mad_all
 
   # save db
+  print("Saving database...")
   df.T.to_json(output_json)
