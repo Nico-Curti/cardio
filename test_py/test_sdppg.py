@@ -32,7 +32,7 @@ def test_find_next_a():
 
 def test_features_from_sdppg():
   # simulating a PPG signal as a sum of sinusoidal waves with frequences 1, 2, and 3 Hz
-  t = np.linspace(0, .5, 600)
+  t = np.linspace(-0.3, 1., 600)
   w = 2*np.pi
   v = np.asarray([1., 2., 3.])
   s = 0
@@ -45,7 +45,7 @@ def test_features_from_sdppg():
 
 
 def test_dictionary_returned_from_features_from_sdppg():
-  t = np.linspace(0, .5, 600)
+  t = np.linspace(-0.3, 1., 600)
   w = 2*np.pi
   v = np.asarray([1., 2., 3.])
   s = 0
@@ -61,7 +61,7 @@ def test_dictionary_returned_from_features_from_sdppg():
 
 
 def test_features_from_sdppg_non_def_param():
-  t = np.linspace(0, .5, 600)
+  t = np.linspace(-0.3, 1., 600)
   w = 2*np.pi
   v = np.asarray([1., 2., 3.])
   s = 0
@@ -73,7 +73,7 @@ def test_features_from_sdppg_non_def_param():
   assert np.isclose(max(abs(sdppg)), 1) == False
 
 def test_features_from_sdppg_b_res():
-  t = np.linspace(0, .5, 600)
+  t = np.linspace(-0.3, .5, 600)
   w = 2*np.pi
   v = np.asarray([1., 2., 3.])
   s = 0

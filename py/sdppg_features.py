@@ -17,6 +17,20 @@ def find_first_index_for_maximum_in_zero_crossing(sdppg, zero_crossing):
   Returns
   ----
   start: int; leftmost end of the interval containing a local maximum
+
+  Example
+  ----
+  >>>import numpy as np
+  >>>x = np.linspace(-2.5*np.pi, 2.5*np.pi, 2000)
+  >>>f = np.sin(x)
+  >>>d2f = np.gradient(np.gradient(f, x), x)
+  >>>zero_crossing = np.where(d2f[0:-1]*d2f[1:] < 0.)[0]
+  >>>s = find_first_index_for_maximum_in_zero_crossing(f, zero_crossing)
+  >>>i1, i2 = zero_crossing[s], zero_crossing[s+1]
+  >>>np.max(f[i1:i2])  # expected 1: max(sin(x))
+    0.9999987650650776
+  >>>x[np.argmax(f[i1:i2])+i1]  # must be shifted by i1; expected -3*np.pi/2 (~ -4.712)
+    -4.710817398266836
   """
   if len(zero_crossing) == 0:
     return 0
