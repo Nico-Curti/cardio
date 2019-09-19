@@ -13,11 +13,13 @@
 
 The project is developed at the University of Bologna and all rights are reserved.
 
-1. [Prerequisites](#prerequisites)
-2. [Description](#description)
-3. [Authors](#authors)
-4. [License](#license)
-5. [Acknowledgments](#acknowledgments)
+- [Cardio](#cardio)
+    - [(Cardiological data processing)](#cardiological-data-processing)
+  - [Prerequisites](#prerequisites)
+  - [Description](#description)
+  - [Authors](#authors)
+  - [License](#license)
+  - [Acknowledgments](#acknowledgments)
 
 ## Prerequisites
 
@@ -30,6 +32,10 @@ The project, still in progress, proposes to analyze cardiological data through a
 - [pre_process.py](https://github.com/Nico-Curti/cardio/blob/master/py/pre_process.py): The first step is the pre-processing of raw data. In this step we perform the demodulation of the signal and its smoothing, focusing on the red channel only.
 
 - [create_db.py](https://github.com/Nico-Curti/cardio/blob/master/py/create_db.py): The first step is called inside the DB creation, in which we process each signal (joined with its information labels) and we extract many features. the code implements the most common features of cardiological data, like the BPM, SDNN, SDSD, PNN20, PNN50 until more complex (and dynamical) features like the mutual information and the embedding dimension (see. Takens theorem).
+
+- [clean_db.py](https://github.com/Nico-Curti/cardio/blob/master/py/clean_db.py): Before analyzing the data, the database must be cleaned; clean_db offer a way to load and clean it by removing useless columns or patients with incomplete or incorrect data wherever specified.
+
+- [sdppg_features.py](https://github.com/Nico-Curti/cardio/blob/master/py/sdppg_features.py): Header to allow feature extraction from SDPPG, which is the second derivative of a PPG signal. A few examples of intersting features are the waves "a", "b", "c", "d", and "e" and the AGI index.
 
 - Work in progress...
 
