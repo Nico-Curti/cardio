@@ -14,6 +14,21 @@ def db_to_dataframe(filename):
   Return
   ----
   d: DataFrame; the dataframe containing the elements stored in the file
+
+  Example
+  ----
+  >>>import pandas as pd
+  >>>import json
+  >>>import os
+  >>>d = {'first': {'a': 1, 'b': 2}, 'second': {'a': 7, 'b': 14}}
+  >>>with open('a.json', 'w') as file: json.dump(d, file)
+  >>>f = db_to_dataframe('a.json')
+  >>>fs
+    Out:
+       a   b
+    0  1   2
+    1  7  14
+  >>>os.remove('a.json')
   """
   d = json.load(open(filename))
   d = pd.DataFrame(d).T
@@ -43,6 +58,22 @@ def clean_db(db, drop_columns=['rhythm'],
   Return
   ---
   newdb: pandas DataFrame; the cleaned dataframe
+
+  Example
+  ---
+  >>>import numpy as np
+  >>>import pandas as pd
+  >>>d = {}
+  >>>names = ['first', 'second', 'third', 'fourth']
+  >>>v1, v2 = [0, 0, 56, 66], [20, np.nan, 40, 56]
+  >>>for name, _, __ in zip(names, v1, v2):
+  >>>  d[name] = {'rhythm': np.nan, 'weight': _, 'age': __}
+  >>>d = pd.DataFrame(d).T
+  >>>clean_db(d)
+    Out:
+        age  weight
+    0  40.0    56.0
+    1  56.0    66.0
   """
   newdb = db
   if quality_threshold is not None:
