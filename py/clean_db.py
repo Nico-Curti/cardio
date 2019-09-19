@@ -11,7 +11,7 @@ def db_to_dataframe(filename):
   ----
   filename: string; the full path to the json file, complete with extension
 
-  Return
+  Returns
   ----
   d: DataFrame; the dataframe containing the elements stored in the file
 
@@ -67,7 +67,7 @@ def clean_db(db, drop_columns=['rhythm'],
   >>>names = ['first', 'second', 'third', 'fourth']
   >>>v1, v2 = [0, 0, 56, 66], [20, np.nan, 40, 56]
   >>>for name, _, __ in zip(names, v1, v2):
-  >>>  d[name] = {'rhythm': np.nan, 'weight': _, 'age': __}
+  ...  d[name] = {'rhythm': np.nan, 'weight': _, 'age': __}
   >>>d = pd.DataFrame(d).T
   >>>clean_db(d)
     Out:

@@ -74,7 +74,7 @@ def find_next_a(sdppg, zero_crossing, start):
   >>>v = np.asarray([1., 2., 3.])
   >>>s = 0
   >>>for f in v:
-  >>>  s += f**(-2)*np.sin(2*np.pi*f*t)
+  ...  s += f**(-2)*np.sin(2*np.pi*f*t)
   >>>sdppg = np.gradient(np.gradient(s, t), t)
   >>>fdppg = np.gradient(np.gradient(sdppg, t), t)
   >>>sdppg = np.flip(sdppg)
@@ -118,6 +118,7 @@ def sdppg_agi(a, b, c, d, e):
   c: float; array-like of float; feature 'c' extracted from the sdppg approach.
   d: float; array-like of float; feature 'd' extracted from the sdppg approach.
   e: float; array-like of float; feature 'e' extracted from the sdppg approach.
+
   Returns
   ----
   AGI: numpy array of floats; the ageing index computed for each element.
@@ -161,14 +162,13 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   spline: bool (default=True); use the cubic spline interpolation of signal instead of signal. BEWARE of splines: they can change the maxima and minima value and position!
   f: int (default=100); factor used to compute the new number of points if spline==True : the length of the splined signal will be len(t)*f
 
-  NOTES: t and signal must have the same length; t must be monotonic and positive
-
   Returns
   ----
   sdppg: the sdppg computed from the PPG signal provided. It is the result of the spline if spline=True
   features: dictionary containing 10 numpy array: a, b, c, d, e (each of them is a np array of the respective "wave" fount in the SDPPG), the AGI index (AGI) computed for each element of the array, and the time differences between the "waves" a and b, b and c, c and d, and d and e (t_ab, t_bc, t_cd, t_de).
 
   NOTES:
+    t and signal must have the same length; t must be monotonic and positive
     a is the initial positive wave
     b is early negative wave (we suppose b < 0)
     c is the re-upsloping wave
@@ -188,7 +188,7 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   >>>v = np.asarray([1., 2., 3.])
   >>>s = 0
   >>>for f in v:
-  >>>  s += f**(-2)*np.sin(w*f*t)
+  ...  s += f**(-2)*np.sin(w*f*t)
   >>>f, a = features_from_sdppg(t, s, normalise=False, spline=False)
   >>>a
     Out:
