@@ -2,8 +2,6 @@
 import json
 import numpy as np
 import pandas as pd
-import argparse
-
 
 def db_to_dataframe(filename):
   """
