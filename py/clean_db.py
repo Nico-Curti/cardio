@@ -65,15 +65,3 @@ def clean_db(db, drop_columns=['rhythm'],
   if reset_index == True:
     newdb = newdb.set_index(np.arange(len(newdb)))
   return newdb
-
-
-if __name__ == 'main':
-  descr = "Load and clean database from json file."
-  parser = argparse.ArgumentParser(description=descr)
-  parser.add_argument("-f", required=False,  dest="filename", action="store", help="Database filename", default='cardio.json')
-  # get filename
-  filename = parser.filename
-  df = db_to_dataframe(filename)
-  df = clean_db(df)
-
-
