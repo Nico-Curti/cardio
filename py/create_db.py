@@ -102,9 +102,9 @@ def create_db(data_dir, info_dir=""):
     info_dir and vice versa.
 
   Example
-  >>>data_file = "data"
-  >>>info_file = data_file
-  >>>create_db(data_file, info_file)
+  >>>data_dir = "data"
+  >>>info_dir = data_dir
+  >>>create_db(data_dir, info_dir)
     Processing head_1_data.txt
     Processing head_2_data.txt
     [...]
