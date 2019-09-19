@@ -107,6 +107,17 @@ def sdppg_agi(a, b, c, d, e):
   For further reading:
       https://www.hindawi.com/journals/tswj/2013/169035/abs/
       https://ieeexplore.ieee.org/document/5412099
+
+  Example
+  ----
+  >>>a = [1, .8, .3]
+  >>>b = [-.9, -.7, -.2]
+  >>>c = [.1, .1, .1]
+  >>>d = [-.1, -.1, -.1]
+  >>>e = c
+  >>>sdppg_agi(a, b, c, d, e)
+  Out:
+    [-1., -1., -1.]
   """
   a_ = np.asarray(a, dtype=float)
   b_ = np.asarray(b, dtype=float)
