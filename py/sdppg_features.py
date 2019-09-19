@@ -66,6 +66,24 @@ def find_next_a(sdppg, zero_crossing, start):
   Notes: if there is no next a, a is set to np.nan and k to len(zero_crossing)
   For further information:
       https://ieeexplore.ieee.org/document/5412099
+
+  Example
+  ----
+  >>># simulating a PPG signal as a sum of sinusoidal waves with frequences 1, 2, and 3 Hz
+  >>>t = np.linspace(-0.3, 1., 600)
+  >>>v = np.asarray([1., 2., 3.])
+  >>>s = 0
+  >>>for f in v:
+  >>>  s += f**(-2)*np.sin(2*np.pi*f*t)
+  >>>sdppg = np.gradient(np.gradient(s, t), t)
+  >>>fdppg = np.gradient(np.gradient(sdppg, t), t)
+  >>>sdppg = np.flip(sdppg)
+  >>>fdppg = np.flip(fdppg)
+  >>>zero_crossing = np.where(fdppg[0:-1]*fdppg[1:] < 0.)[0]
+  >>>start = find_first_index_for_maximum_in_zero_crossing(sdppg, zero_crossing)
+  >>>find_next_a(sdppg, zero_crossing, start)  # (a, k)
+    Out:
+    (98.64934136508828, 1)
   """
   k = start
 
