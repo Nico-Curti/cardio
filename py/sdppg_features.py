@@ -149,6 +149,30 @@ def features_from_sdppg(t, signal, normalise=True, flip=True,
   For further information, please read:
       https://www.hindawi.com/journals/tswj/2013/169035/abs/
       https://ieeexplore.ieee.org/document/5412099
+
+  Example
+  ----
+
+  >>># simulating a PPG signal as a sum of sinusoidal waves with frequences 1, 2, and 3 Hz
+  >>>t = np.linspace(-0.3, 1, 600)
+  >>>w = 2*np.pi
+  >>>v = np.asarray([1., 2., 3.])
+  >>>s = 0
+  >>>for f in v:
+  >>>  s += f**(-2)*np.sin(w*f*t)
+  >>>f, a = features_from_sdppg(t, s, normalise=False, spline=False)
+  >>>a
+    Out:
+    {'a': array([98.64934137]),
+     'b': array([-9.54744371]),
+     'c': array([25.06845097]),
+     'd': array([-25.07132544]),
+     'e': array([9.54438823]),
+     'AGI': array([-0.19350314]),
+     't_ab': array([0.18230384]),
+     't_bc': array([0.13238731]),
+     't_cd': array([0.15843072]),
+     't_de': array([0.13238731])}
   """
   sdppg = np.gradient(np.gradient(signal, t), t)
   fdppg = np.gradient(np.gradient(sdppg, t), t)
