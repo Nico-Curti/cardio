@@ -21,12 +21,21 @@ def test_find_first_index_for_maximum_in_zero_crossing():
 
 
 def test_find_next_a():
-  x = np.linspace(3, 0, 600)
-  t = np.linspace(0, 8*np.pi, 600)
-  s = np.sin(t)*x
-  z = [0] + [int(len(s)/i) for i in np.arange(8, 0, -1)]
-  a, k = sdppg_features.find_next_a(s, z, 0)
-  assert a == np.max(s)
+  # simulating a PPG signal as a sum of sinusoidal waves with frequences 1, 2, and 3 Hz
+  t = np.linspace(-0.3, 1., 600)
+  w = 2*np.pi
+  v = np.asarray([1., 2., 3.])
+  s = 0
+  for f in v:
+    s += f**(-2)*np.sin(w*f*t)
+  sdppg = np.gradient(np.gradient(s, t), t)
+  fdppg = np.gradient(np.gradient(sdppg, t), t)
+  sdppg = np.flip(sdppg)
+  fdppg = np.flip(fdppg)
+  zero_crossing = np.where(fdppg[0:-1]*fdppg[1:] < 0.)[0]
+  start = sdppg_features.find_first_index_for_maximum_in_zero_crossing(sdppg, zero_crossing)
+  a, k = sdppg_features.find_next_a(sdppg, zero_crossing, start)
+  assert a == np.max(sdppg)
   assert k == 1
 
 
