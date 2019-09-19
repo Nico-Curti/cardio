@@ -1,6 +1,6 @@
 | **Authors**  | **Project** |
 |:------------:|:-----------:|
-|   N. Curti   |    Cardio   |
+| [**N. Curti**](https://github.com/Nico-Curti) <br/> [**L. Dall'Olio**](https://github.com/Lorenzo-DallOlio) <br/> [**V. Recaldini**](https://github.com/valentinorecaldini)  |    Cardio   |
 
 <a href="https://github.com/UniboDIFABiophysics">
 <div class="image">
@@ -13,13 +13,11 @@
 
 The project is developed at the University of Bologna and all rights are reserved.
 
-- [Cardio](#cardio)
-    - [(Cardiological data processing)](#cardiological-data-processing)
-  - [Prerequisites](#prerequisites)
-  - [Description](#description)
-  - [Authors](#authors)
-  - [License](#license)
-  - [Acknowledgments](#acknowledgments)
+- [Prerequisites](#prerequisites)
+- [Description](#description)
+- [Authors](#authors)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ## Prerequisites
 
@@ -42,6 +40,8 @@ The project, still in progress, proposes to analyze cardiological data through a
 ## Authors
 
 * **Nico Curti** [git](https://github.com/Nico-Curti), [unibo](https://www.unibo.it/sitoweb/nico.curti2)
+* **Lorenzo Dall'Olio** [git](https://github.com/Lorenzo-DallOlio)
+* **Valentino Recaldini** [git](https://github.com/valentinorecaldini)
 
 See also the list of [contributors](https://github.com/Nico-Curti/cardio/contributors) [![GitHub contributors](https://img.shields.io/github/contributors/Naereen/StrapDown.js.svg)](https://GitHub.com/Nico-Curti/cardio/graphs/contributors/) who participated in this project.
 
@@ -53,5 +53,4 @@ NO LICENSEs are available. All rights are reserved.
 
 Thanks goes to all contributors of this project:
 
-| [<img src="https://avatars0.githubusercontent.com/u/1419337?s=400&v=4" width="100px;"/><br /><sub><b>Enrico Giampieri</b></sub>](https://github.com/EnricoGiampieri)<br /> | [<img src="https://avatars3.githubusercontent.com/u/44815392?s=400&v=4" width="100px;"/><br /><sub><b>Lorenzo Dall'Olio</b></sub>](https://github.com/Lyro96)<br /> |
-| :---: | :---: |
+[<img src="https://avatars0.githubusercontent.com/u/1419337?s=400&v=4" width="100px;"/><br /><sub><b>Enrico Giampieri</b></sub>](https://github.com/EnricoGiampieri) <br />
