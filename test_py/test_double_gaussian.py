@@ -5,7 +5,6 @@ import numpy as np
 import sys
 sys.path.append("../py")
 import double_gaussian_features
-import pytest
 
 
 def test_find_x_of_minima():
