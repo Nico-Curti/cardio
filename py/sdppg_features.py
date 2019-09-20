@@ -87,7 +87,7 @@ def find_next_a(sdppg, zero_crossing, start):
   """
   k = start
 
-  def compute_max(x, z, n):  # TODO maybe out?
+  def compute_max(x, z, n):
     return np.max(x[z[n]:z[n+1]])
   z_len = len(zero_crossing)
   if k + 3 >= z_len:
