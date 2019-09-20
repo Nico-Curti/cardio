@@ -99,7 +99,10 @@ def find_x_of_minima(time, signal):
 def features_from_dicrotic_notch(time, signal):
   """
   function used to extract features from differences between systolic and
-  diastolic peaks by performing a double gaussian fit
+  diastolic peaks by performing a double gaussian fit.
+  The double gaussian fit is performed between two local minima,
+  so it needs a local minimum before the systolic peak and one after the
+  diastolic peak to work properly.
 
   Parameters
   ----
