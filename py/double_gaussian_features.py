@@ -32,6 +32,24 @@ def find_x_of_minima(time, signal):
   Return
   ----
   final_peaks: list; the list containing the index positions of signal minima
+
+  Example
+  ----
+  >>>import numpy as np
+  >>>
+  >>>x = np.linspace(0., 10*np.pi, 10000)
+  >>>y = np.sin(x)
+  >>>x_of_minima = find_x_of_minima(x, y)
+  >>>
+  >>>x_of_minima
+    Out:
+    array([1500, 3500, 5499, 7499])
+  >>>x[x_of_minima]
+    Out:
+    array([ 4.71286027, 10.99667395, 17.27734574, 23.56115943])
+  >>>y[x_of_minima]
+    Out:
+    array([-0.99999989, -0.9999994 , -0.999999  , -0.99999969])
   """
 
   sign = -1*np.asarray(signal)  # -1* is used to find minima instead of maxima
@@ -103,8 +121,47 @@ def features_from_dicrotic_notch(time, signal):
 
   correct_x_of_maxima: list; list containing the x component of the maxima of
   each single peak
+
+  Example
+  ----
+  >>>import numpy as np
+  >>>
+  >>>state = np.random.RandomState(seed = 42)
+  >>>
+  >>>mean1, var1 = 0. , .5
+  >>>mean2, var2 = 2. , 1.
+  >>>
+  >>>gauss1 = state.normal(mean1, var1, 1000000)
+  >>>gauss2 = state.normal(mean2, var2, 1000000)
+  >>>
+  >>># will be used also as x-axis
+  >>>binning = np.linspace(-4., 7., 100)
+  >>>
+  >>># summing the 2 gaussians, will be used as y-axis
+  >>>double_gaussian = np.histogram(gauss1, bins=binning)[0] + np.histogram(gauss2, bins=binning)[0]
+  >>>
+  >>># adding two spikes at either side of double_gaussian in order to obtain
+  >>># two local minima (one before and one after the signal) because they
+  >>># are needed for features_from_dictrotic_notch to work properly
+  >>>double_gaussian[1] = max(double_gaussian)
+  >>>double_gaussian[-1] = max(double_gaussian)
+  >>>
+  >>>
+  >>>features = features_from_dicrotic_notch(binning[:-1], double_gaussian)
+  >>>
+  >>>print("mean1:", mean1, "    predicted mean1:", features[0][0][1])
+  >>>print("var1:", var1, "    predicted var1:", features[0][0][2])
+  >>>print("mean2:", mean2, "    predicted mean1:", features[0][0][4])
+  >>>print("var2:", var2, "    predicted mean1:", features[0][0][5])
+    Out:
+    mean1: 0.0     predicted mean1: -0.055731720038204834
+    var1: 0.5     predicted var1: 0.5020164668217136
+    mean2: 2.0     predicted mean1: 1.9465910153756594
+    var2: 1.0     predicted mean1: 0.9993471020376136
   """
   x_of_minima = find_x_of_minima(time, signal)
+
+  assert(len(x_of_minima) > 1)
 
   parameter_list = []
   total_beat_duration_list = []
