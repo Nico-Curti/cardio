@@ -3,7 +3,6 @@ import numpy as np
 import sys
 sys.path.append("../py")
 import sdppg_features
-import pytest
 
 
 def test_find_first_index_for_maximum_in_zero_crossing():
