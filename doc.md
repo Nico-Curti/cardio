@@ -136,13 +136,11 @@ Find the first index in the zero_crossing array that corresponds to the
     ...  s += f**(-2)*np.sin(2*np.pi*f*t)
     >>>sdppg = np.gradient(np.gradient(s, t), t)
     >>>fdppg = np.gradient(np.gradient(sdppg, t), t)
-    >>>sdppg = np.flip(sdppg)
-    >>>fdppg = np.flip(fdppg)
     >>>zero_crossing = np.where(fdppg[0:-1]*fdppg[1:] < 0.)[0]
     >>>start = find_first_index_for_maximum_in_zero_crossing(sdppg, zero_crossing)
     >>>find_next_a(sdppg, zero_crossing, start)  # (a, k)
-        Out:
-        (98.64934136508828, 1)
+      Out:
+      (98.64553538733412, 2)
 
 ----
 
@@ -229,27 +227,26 @@ Compute the ageing index (AGI) from the features (a, b, c, d, e) extracted
 
   Example
   ----
-
     >>># simulating a PPG signal as a sum of sinusoidal waves with frequences 1, 2, and 3 Hz
     >>>t = np.linspace(-0.3, 1, 600)
-    >>>w = 2*np.pi
     >>>v = np.asarray([1., 2., 3.])
     >>>s = 0
     >>>for f in v:
-    ...  s += f**(-2)*np.sin(w*f*t)
-    >>>f, a = features_from_sdppg(t, s, normalise=False, spline=False)
+    ...  s += f**(-2)*np.sin(2*np.pi*f*t)
+    >>> t += .3  # avoiding negative t (optional)
+    >>>f, a = features_from_sdppg(t, s, normalise=False, flip=False, spline=False)
     >>>a
-        Out:
-        {'a': array([98.64934137]),
-        'b': array([-9.54744371]),
-        'c': array([25.06845097]),
-        'd': array([-25.07132544]),
-        'e': array([9.54438823]),
-        'AGI': array([-0.19350314]),
-        't_ab': array([0.18230384]),
-        't_bc': array([0.13238731]),
-        't_cd': array([0.15843072]),
-        't_de': array([0.13238731])}  
+      Out:
+      {'a': array([98.64553539]),
+    'b': array([-98.64819372]),
+    'c': array([9.54438823]),
+    'd': array([-25.07132544]),
+    'e': array([25.06845097]),
+    'AGI': array([-1.0967522]),
+    't_ab': array([0.21268781]),
+    't_bc': array([0.18230384]),
+    't_cd': array([0.13238731]),
+    't_de': array([0.15843072])} 
 
 ----
 ## double_gaussian_features
