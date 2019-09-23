@@ -14,12 +14,12 @@
 The project is developed at the University of Bologna and all rights are reserved.
 
 - [Cardio](#cardio)
-        - [(Cardiological data processing)](#cardiological-data-processing)
-    - [Prerequisites](#prerequisites)
-    - [Description](#description)
-    - [Authors](#authors)
-    - [License](#license)
-    - [Acknowledgments](#acknowledgments)
+    - [(Cardiological data processing)](#cardiological-data-processing)
+  - [Prerequisites](#prerequisites)
+  - [Description](#description)
+  - [Authors](#authors)
+  - [License](#license)
+  - [Acknowledgments](#acknowledgments)
 
 ## Prerequisites
 
@@ -29,15 +29,15 @@ The project is written in python language and it uses the most common scientific
 
 The project, still in progress, proposes to analyze cardiological data through a machine learning approach. The analysis work-flow is the following:
 
-- [pre_process.py](https://github.com/Nico-Curti/cardio/blob/master/py/pre_process.py): The first step is the pre-processing of raw data. In this step we perform the demodulation of the signal and its smoothing, focusing on the red channel only.
+- [pre_process.py](https://github.com/Nico-Curti/cardio/blob/master/modules/pre_process.py): The first step is the pre-processing of raw data. In this step we perform the demodulation of the signal and its smoothing, focusing on the red channel only.
 
-- [create_db.py](https://github.com/Nico-Curti/cardio/blob/master/py/create_db.py): The first step is called inside the DB creation, in which we process each signal (joined with its information labels) and we extract many features. the code implements the most common features of cardiological data, like the BPM, SDNN, SDSD, PNN20, PNN50 until more complex (and dynamical) features like the mutual information and the embedding dimension (see. Takens theorem).
+- [create_db.py](https://github.com/Nico-Curti/cardio/blob/master/modules/create_db.py): The first step is called inside the DB creation, in which we process each signal (joined with its information labels) and we extract many features. the code implements the most common features of cardiological data, like the BPM, SDNN, SDSD, PNN20, PNN50 until more complex (and dynamical) features like the mutual information and the embedding dimension (see. Takens theorem).
 
-- [clean_db.py](https://github.com/Nico-Curti/cardio/blob/master/py/clean_db.py): Python module before analyzing the data, the database must be cleaned; clean_db offer a way to load and clean it by removing useless columns or patients with incomplete or incorrect data wherever specified.
+- [clean_db.py](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py): Python module before analyzing the data, the database must be cleaned; clean_db offer a way to load and clean it by removing useless columns or patients with incomplete or incorrect data wherever specified. It contains only functions; it cannot be executed as \_\_main\_\_.
 
-- [sdppg_features.py](https://github.com/Nico-Curti/cardio/blob/master/py/sdppg_features.py): Python module to allow feature extraction from SDPPG, which is the second derivative of a PPG signal. A few examples of intersting features are the waves "a", "b", "c", "d", and "e" and the AGI index.
+- [sdppg_features.py](https://github.com/Nico-Curti/cardio/blob/master/modules/sdppg_features.py): Python module to allow feature extraction from SDPPG, which is the second derivative of a PPG signal. A few examples of intersting features are the waves "a", "b", "c", "d", and "e" and the AGI index. It contains only functions; it cannot be executed as  \_\_main\_\_.
 
-- [double_gaussian_features.py](https://github.com/Nico-Curti/cardio/blob/master/py/double_gaussian_features.py): Python module to allow feature extraction from dicrotic notch by performing a double gaussian fit over each beat of a signal.
+- [double_gaussian_features.py](https://github.com/Nico-Curti/cardio/blob/master/modules/double_gaussian_features.py): Python module to allow feature extraction from dicrotic notch by performing a double gaussian fit over each beat of a signal; it cannot be executed as \_\_main\_\_.
 
 - Work in progress...
 
