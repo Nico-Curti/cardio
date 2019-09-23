@@ -68,8 +68,7 @@ def test_clean_db_drop_na():
   df = clean_db.clean_db(d, drop_columns=None,
                           drop_na_in=['rhythm'], drop_zeroes_in=None,
                           quality_threshold=None)
-  assert len(df) == 4*N
-  assert len(df.dropna(subset=('rhythm',))) == len(df)
+  assert len(df) == 4*N == len(df.dropna(subset=('rhythm',)))
 
 
 def test_clean_db_drop_zeroes():
