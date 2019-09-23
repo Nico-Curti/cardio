@@ -2,10 +2,8 @@
 import numpy as np
 import json
 import pandas as pd
-import sys
 import os
-sys.path.append("../py")
-import clean_db
+from cardio.modules import clean_db
 
 def test_db_to_dataframe():
   f = {}

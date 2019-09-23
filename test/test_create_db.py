@@ -3,7 +3,7 @@ import numpy as np
 import os
 import sys
 import shutil
-sys.path.append("../py")
+sys.path.append("../modules")
 import create_db
 
 def test_create_db():

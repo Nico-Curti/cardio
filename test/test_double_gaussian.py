@@ -3,7 +3,7 @@
 
 import numpy as np
 import sys
-sys.path.append("../py")
+sys.path.append("../modules")
 import double_gaussian_features
 
 
