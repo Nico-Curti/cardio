@@ -1,9 +1,6 @@
 
 # -*- coding: utf-8 -*-
 
-# cardio stuff
-import clean_db
-
 # standard libraries
 import numpy as np
 import matplotlib.pylab as plt
@@ -13,6 +10,11 @@ from sklearn.model_selection import KFold
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
+import sys
+# cardio stuff
+sys.path.append("../modules")
+import clean_db
+sys.path.append("../pipeline")
 # %%
 # Load already cleaned db and convert to dataframe
 f = "../cardio_final.json"
@@ -65,7 +67,7 @@ s = ['weight', 'length', 'bmi', 'lf', 'hf', 'c', 'bpm', 'sdsd', 'rmssd',
 # highlighting really sparse data, we decided which feature to use trying to
 # keep at least 1000 patients and raising as much as possible the score
 
-
+s = list(set(s) & set(df.columns))
 # a copy of the db is needed if we want to execute more than once this cell
 # without reloading the json
 d = df

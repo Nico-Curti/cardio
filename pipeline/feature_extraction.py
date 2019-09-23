@@ -1,15 +1,16 @@
 
 # -*- coding: utf-8 -*-
 
-# cardio stuff
-import clean_db
-import double_gaussian_features as dgf
-import sdppg_features
-
 # standard libraries
 import numpy as np
 from operator import itemgetter
 import sys, argparse
+
+# cardio stuff
+sys.path.append("../modules")
+import clean_db, sdppg_features
+import double_gaussian_features as dgf
+sys.path.append("../pipeline")
 
 if __name__ == '__main__':
   description = "Add features to cardio database through SDPPG, double gaussian features, ..."
