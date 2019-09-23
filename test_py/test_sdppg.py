@@ -5,15 +5,20 @@ sys.path.append("../py")
 import sdppg_features
 
 
-def test_find_first_index_for_maximum_in_zero_crossing():
+def test_find_first_index_for_maximum_in_zero_crossing_empty_zc():
   # test empty zero crossing
   t = np.linspace(0, 2*np.pi, 600)
   start = sdppg_features.find_first_index_for_maximum_in_zero_crossing(
           t, [])
   assert start == 0
+
+
+def test_find_first_index_for_maximum_in_zero_crossing_with_zc():
+  t = np.linspace(-2.*np.pi -0.01, 2*np.pi, 1000)
   s = np.sin(t)
-  # 2PI is the period. We expect start to be 0
-  z = [0, int(len(s)/2), len(s)-1]
+  # 2PI is the period
+  d2s = np.gradient(np.gradient(s, t), t)
+  z = np.asarray([0] + list(np.where(d2s[0:-1]*d2s[1:] < 0.)[0]))
   start = sdppg_features.find_first_index_for_maximum_in_zero_crossing(
           s, z)
   assert start == 0
@@ -68,7 +73,7 @@ def test_dictionary_returned_from_features_from_sdppg():
   assert keys == list(f.keys())
 
 
-def test_features_from_sdppg_non_def_param():
+def test_features_from_sdppg_non_normalised():
   t = np.linspace(-0.3, 1., 600)
   w = 2*np.pi
   v = np.asarray([1., 2., 3.])

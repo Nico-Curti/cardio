@@ -16,7 +16,7 @@ def find_first_index_for_maximum_in_zero_crossing(sdppg, zero_crossing):
 
   Returns
   ----
-  start: int; leftmost end of the interval containing a local maximum
+  start: int; index of the leftmost end of the interval containing a local maximum in the zero_crossing array
 
   Example
   ----

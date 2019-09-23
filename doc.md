@@ -89,7 +89,7 @@ Find the first index in the zero_crossing array that corresponds to the
 
   Returns
   ----
-  start: int; leftmost end of the interval containing a local maximum
+  start: int; index of the leftmost end of the interval containing a local maximum in the zero_crossing array
 
   Example
   ----
