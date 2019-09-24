@@ -285,11 +285,12 @@ def create_db(data_dir, info_dir=""):
                    "std_devAA" : stddevAA,
                    "corrRRAA" : corrRRAA,
                    "corrRRAA_Pvalue" : twotailedPvalue_corrRRAA,
-                   'length': info.Length.values.item(),
-                   'city': info.City.values.item(),
-                   'country': info.Country.values.item(),
-                   'lifestyle': info.Lifestyle.values.item(),
-                   'class': info.Class.values.item()
+                   "length": info.Length.values.item(),
+                   "device": info.Device.values.item(),
+                   "city": info.City.values.item(),
+                   "country": info.Country.values.item(),
+                   "lifestyle": info.Lifestyle.values.item(),
+                   "class": info.Class.values.item()
                    }
 
   # saving data on file cardio.json
