@@ -2,18 +2,12 @@
 # -*- coding: utf-8 -*-
 
 # cardio stuff
-import clean_db
 import create_db
 import pre_process as pr
 
 # standard libraries
 import numpy as np
 from scipy.optimize import curve_fit
-from operator import itemgetter
-
-
-
-# TODO insert this function in create_db or define it in create_db
 
 
 def find_x_of_minima(time, signal):
@@ -72,6 +66,15 @@ def find_x_of_minima(time, signal):
     # keeping only peaks detected with all 5 different windows
     peaks = np.intersect1d(peaks, peaklist)
 
+  # this check will be repeated after possible elimination of first and last peak
+  if(len(peaks) < 2):
+    raise ValueError(
+      "found {} minima BEFORE their validity check. We need at least 2 "
+      "to identify an isolated peak and perform fit. Maybe you are not using "
+      "a long enough portion of signal. If you want to analyze a single "
+      "peak make sure you have at least 1 detectable local minima before and "
+      "1 after it".format(len(peaks)))
+
   # first element can't be a correct local extrema, it has no points before
   if(peaks[0] == 0):
     peaks = np.delete(peaks, 0)
@@ -79,6 +82,18 @@ def find_x_of_minima(time, signal):
   # last element can't be a correct local extrema, it has no points after
   if(peaks[-1] == len(sign)-1):
     peaks = np.delete(peaks, -1)
+
+  # repeating check after
+  if(len(peaks) < 2):
+    raise ValueError(
+      "found {} minima AFTER their validity check, but we need at least 2 "
+      "to identify an isolated peak and perform fit. Please note that the "
+      "first/last point of the signal can not be a local minimum since "
+      "it does not have a point before/after. Maybe you are not using "
+      "a long enough portion of signal. If you want to analyze a single "
+      "peak make sure you have at least 1 detectable local minima before and "
+      "1 after it".format(len(peaks)))
+
 
   # peak checking: rejecting lower peaks where RR distance is too small
   final_peaks = []  # definitive peak positions container
@@ -145,7 +160,7 @@ def features_from_dicrotic_notch(time, signal):
   >>>
   >>># adding two spikes at either side of double_gaussian in order to obtain
   >>># two local minima (one before and one after the signal) because they
-  >>># are needed for features_from_dictrotic_notch to work properly
+  >>># are needed for features_from_dictrotic_notch to identify the peak properly
   >>>double_gaussian[1] = max(double_gaussian)
   >>>double_gaussian[-1] = max(double_gaussian)
   >>>
@@ -163,8 +178,6 @@ def features_from_dicrotic_notch(time, signal):
     var2: 1.0     predicted mean1: 0.9993471020376136
   """
   x_of_minima = find_x_of_minima(time, signal)
-
-  assert(len(x_of_minima) > 1)
 
   parameter_list = []
   total_beat_duration_list = []
