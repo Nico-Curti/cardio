@@ -17,6 +17,9 @@ The project is developed at the University of Bologna and all rights are reserve
     - [(Cardiological data processing)](#cardiological-data-processing)
   - [Prerequisites](#prerequisites)
   - [Description](#description)
+    - [Database Generation](#database-generation)
+    - [Signal Processing Modules](#signal-processing-modules)
+    - [Pipelines](#pipelines)
   - [Authors](#authors)
   - [License](#license)
   - [Acknowledgments](#acknowledgments)
@@ -27,8 +30,11 @@ The project is written in python language and it uses the most common scientific
 
 ## Description
 
-The project, still in progress, proposes to analyze cardiological data through a machine learning approach.
-The analysis work-flow is the following:
+The project, still in progress, proposes to analyze cardiological PPG data through a machine learning approach.
+
+### Database Generation
+
+The analysis work-flow is centred around the pre-processing of "raw" data with some initial feature extraction (e.g. computation of RR, which is the distance between two consecutives peaks in the PPG signal). The modules for the database generation are:
 
 - (1) [pre_process.py](https://github.com/Nico-Curti/cardio/blob/master/modules/pre_process.py):
 
@@ -67,62 +73,53 @@ The analysis work-flow is the following:
 
     Optional FIELDNAMEs can be added but will be discarded.
 
-    For further information about the generation of the data and info files please see [here](https://github.com/Nico-Curti/cardio/blob/master/test/test_create_db.py).
+    For further information about the generation of the data and info files please see [here](https://github.com/Nico-Curti/cardio/blob/master/test/test_create_db.py). Please note that the *.info* file must be UTF-8 compatible. The user may want to avoid special characters (i.e. accents, diereses and the like).
 
 
   - OUTPUT:
 
     A .json file in the current working directory as *cardio.json*, containing a dictionary of dictionaries. The outer dictionary has the patient filename as key and, as value, an inner dictionary whose structure is shown [here](https://github.com/Nico-Curti/cardio/blob/master/modules/create_db.py#L250).
 
-- [feature_extraction.py](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py):
+  create_db.py can be executed from terminal with the following arguments:
   
-  Composed of:
-  
+  - -f DATA_DIR; data directory (required)
+  - -i INFO_DIR; info directory (optional; default=DATA_DIR)
+
+### Signal Processing Modules
+
+The following modules are used for database loading/cleaning and feature extraction pipelines. Please note that they only contain functions.
 
   - [clean_db.py](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py): 
     
-    Python module before analyzing the data, the database must be cleaned; clean_db offer a way to load and clean it by removing useless columns or patients with incomplete or incorrect data wherever specified. It contains only functions; it cannot be executed as \_\_main\_\_.
+    Python module before analyzing the data, the database must be cleaned; clean_db offers a way to load and clean a database by removing useless columns or patients with incomplete or incorrect data wherever specified. It contains only functions; it cannot be executed as     \_\_main\_\_.
 
-    - INPUT:
-    
-      Raw data, we need a ... configuration to run pre_process properly.
-    
-    - OUTPUT:
-
-      yadday... .
+    Please note that we consider incomplete or incorrect data those with fields of interest with NaN values or meaningless zero values. The zeros are generally considered when checking the fields Age, Weight and Length.
 
   - [sdppg_features.py](https://github.com/Nico-Curti/cardio/blob/master/modules/sdppg_features.py): 
     
-    Python module to allow feature extraction from SDPPG, which is the second derivative of a PPG signal. A few examples of intersting features are the waves "a", "b", "c", "d", and "e" and the AGI index. It contains only functions; it cannot be executed as  \_\_main\_\_.
+    Python module to allow feature extraction from SDPPG, which is the second derivative of a PPG signal with respect to time. A few examples of intersting features are the waves "a", "b", "c", "d" and "e", the AGI index and the time intervals between consecutive waves. It contains only functions; it cannot be executed as \_\_main\_\_. 
 
-    - INPUT:
+    An explanation of the *waves* within an SDPPG signal and the AGI index can be found [here](https://www.hindawi.com/journals/tswj/2013/169035/). They are supposedly features that correlate with age.
+
+    The computation of the  *waves* is done through the analysis of the zero crossing from the FDPPG (fourth derivative of PPG signal).
     
-      Raw data, we need a ... configuration to run pre_process properly.
-    
-    - OUTPUT:
+    We assume 1D arrays for time and signal. The SDPPG and the FDPPG can be splined to increase the number of data points. However, this can slightly change the positions and the heights of the peaks.
 
-      yadday... .
-
+    Please note that the signal acquired from smartphone PPG might need to be flipped.
 
   - [double_gaussian_features.py](https://github.com/Nico-Curti/cardio/blob/master/modules/double_gaussian_features.py): 
     
     Python module to allow feature extraction from dicrotic notch by performing a double gaussian fit over each beat of a signal; it cannot be executed as \_\_main\_\_.
 
-    - INPUT:
-    
-      Raw data, we need a ... configuration to run pre_process properly.
-    
-    - OUTPUT:
 
-      yadday... .
+Further information about called functions available [here](https://github.com/Nico-Curti/cardio/blob/master/doc.md).
+
+### Pipelines 
+
+- [feature_extraction.py](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py):
 
 - [data_analysis](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py):
   
-  When.
-
-- Work in progress...
-
-further information about called functions available [here](https://github.com/Nico-Curti/cardio/blob/master/doc.md)
 
 ## Authors
 
