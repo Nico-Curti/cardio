@@ -111,9 +111,30 @@ The following modules are used for database loading/cleaning and feature extract
 
   - [double_gaussian_features.py](https://github.com/Nico-Curti/cardio/blob/master/cardio/double_gaussian_features.py): 
     
-    Python module to allow feature extraction from dicrotic notch by performing a double gaussian fit over each beat of a signal; it cannot be executed as \_\_main\_\_.
+    Python module to allow feature extraction from dicrotic notch by performing a double gaussian fit over each single beat of a PPG signal; it cannot be executed as \_\_main\_\_.
 
+    Initially the indices of all the local minima below a certain threshold are found. If less than two minima are found a RuntimeError is raised and the function stops working. Please note that first/last point can not be considered as local minimum since it has no point before/after.
+    
+    If no errors are raised, then each portion of signal between two local minima is considered as a single PPG peak. The fit is performed on it by using the following fitting function:
+     
+        y = A1*e^[(x-m1)^2/(2*s1^2)] + A2*e^[(x-m2)^2/(2*s2^2)] 
 
+    where:
+    - Ai is the maximum of the i-th gaussian;
+    - mi is the mean of the i-th gaussian;
+    - si is the standard deviation of the i-th gaussian;
+    - x is the time;
+    - y is the peak value at time x.
+
+    If one of the above fits raises a RuntimeError or a TypeError, the results for that peak are ignored.
+
+    In addition to the 6 fit parameters, the beat duration (distance in time between local minima at the ends of considered peak) and the beat height (maximum vertical difference between two points of the considered peak) are computed and given as output.
+    
+    The output consists of a list of lists:
+    - list of fitting parameters (1 list of 6 values for each evaluated peak)
+    - list of beat durations (1 element for each evaluated peak)
+    - list of beat heights (1 element for each evaluated peak)
+  
 Further information about called functions available [here](https://github.com/Nico-Curti/cardio/blob/master/doc.md).
 
 ### Pipelines 
@@ -133,7 +154,10 @@ Further information about called functions available [here](https://github.com/N
 
 - [data_analysis](https://github.com/Nico-Curti/cardio/blob/master/cardio/clean_db.py):
   
-  An example of script for the processing of the data to estimate the patients' age. We suggest that the user execute it cell by cell within an IDE such as Spyder. 
+  An example of script for the processing of the data to estimate the patients' age. We suggest that the user execute it cell by cell within an IDE such as Spyder.
+
+  It can be executed from command line inside the folder pipeline. In this case it takes an optional argument:
+  - -in INPUT_JSON: input json file; default=../cardio_final.json
 
   The database is loaded and cleaned by removing the rhythm, city, country, filename, filenumber columns (if present) and the array-like columns ('RR', 'AA', 'Rpeakvalues', 'time', 'signal'). 
   
