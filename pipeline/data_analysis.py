@@ -9,15 +9,29 @@ from sklearn.linear_model import RidgeCV, LinearRegression, Ridge
 from sklearn.model_selection import KFold
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-
+import argparse
 import sys
 # cardio stuff
 sys.path.append("../cardio")
 import clean_db
 sys.path.append("../pipeline")
+
+if __name__ == '__main__':
+  description = "Data analysis: ridge regression with target=age"
+  parser = argparse.ArgumentParser(description=description)
+  parser.add_argument("-in", required=False, dest="input_json", action="store",
+                      help="Input json file. Default = ../cadio_final.json", default="../cardio_final.json")
+
+  args = parser.parse_args()
+
+  # get parameters
+  f = args.input_json
+else:
+  f="../cardio_final.json"
+
 # %%
+
 # Load already cleaned db and convert to dataframe
-f = "../cardio_final.json"
 df = clean_db.db_to_dataframe(f)
 
 # %%
