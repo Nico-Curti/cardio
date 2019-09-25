@@ -97,16 +97,15 @@ if __name__ == '__main__':
   notch_features = []
   durations = []
   heights = []
-  x_of_max = []
 
   for guy in range(len(df.age)):
     print(guy)
-    P, D, H, X_M = dgf.features_from_dicrotic_notch(df.time[guy], df.signal[guy])
+    P, D, H = dgf.features_from_dicrotic_notch(df.time[guy], df.signal[guy])
 
     notch_features.append(P)
     durations.append(D)
     heights.append(H)
-    x_of_max.append(X_M)
+
   print("ended")
 
   print("Extracting features from Guassian fits...")

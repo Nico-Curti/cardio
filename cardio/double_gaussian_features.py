@@ -182,7 +182,6 @@ def features_from_dicrotic_notch(time, signal):
   parameter_list = []
   total_beat_duration_list = []
   total_beat_height_gap_list = []
-  correct_x_of_maxima = []
 
   # function to initialize the fitting parameters (to avoid wrong convergence)
   def pre_gaus(x, y):
@@ -230,7 +229,6 @@ def features_from_dicrotic_notch(time, signal):
       parameter_list.append(parameters)
       total_beat_duration_list.append(max(X)-min(X))
       total_beat_height_gap_list.append(max(Y)-min(Y))
-      correct_x_of_maxima.append(X[np.argmax(Y)])
 
     # skip problematic peaks
     except RuntimeError:
@@ -238,4 +236,4 @@ def features_from_dicrotic_notch(time, signal):
     except TypeError:
       continue
 
-  return parameter_list, total_beat_duration_list, total_beat_height_gap_list, correct_x_of_maxima
+  return parameter_list, total_beat_duration_list, total_beat_height_gap_list

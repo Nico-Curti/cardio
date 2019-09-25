@@ -113,7 +113,7 @@ def test_output_shape_of_features_from_dicrotic_notch_on_signal_with_dicrotic_no
 
   assert(len(features[0]) == len(features[1]) == len(features[2]))
   assert(np.size(features[0]) == len(features[0])*6.)
-  assert(np.size(features) == len(features[1])*4.)
+  assert(np.size(features) == len(features[1])*3.)
 
 
 def test_duration_feature_on_signal_with_dicrotic_notches():
@@ -246,7 +246,7 @@ def test_output_shape_of_features_from_dicrotic_notch_on_signal_without_dicrotic
 
   assert(len(features[0]) == len(features[1]) == len(features[2]))
   assert(np.size(features[0]) == len(features[0])*6.)
-  assert(np.size(features) == len(features[1])*4.)
+  assert(np.size(features) == len(features[1])*3.)
 
 
 def test_duration_feature_on_signal_without_dicrotic_notches():
