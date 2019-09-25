@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from cardio.modules import sdppg_features
+from cardio import sdppg_features
 
 
 def test_find_first_index_for_maximum_in_zero_crossing_empty_zc():

@@ -3,7 +3,7 @@ import numpy as np
 import json
 import pandas as pd
 import os
-from cardio.modules import clean_db
+from cardio import clean_db
 
 def test_db_to_dataframe():
   f = {}

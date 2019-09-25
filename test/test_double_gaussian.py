@@ -3,7 +3,7 @@
 
 import numpy as np
 import sys
-sys.path.append("../modules")
+sys.path.append("../cardio")
 import double_gaussian_features
 
 

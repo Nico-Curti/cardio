@@ -36,7 +36,7 @@ The project, still in progress, proposes to analyze cardiological PPG data throu
 
 The analysis work-flow is centred around the pre-processing of "raw" data with some initial feature extraction (e.g. computation of RR, which is the distance between two consecutives peaks in the PPG signal). The modules for the database generation are:
 
-- (1) [pre_process.py](https://github.com/Nico-Curti/cardio/blob/master/modules/pre_process.py):
+- (1) [pre_process.py](https://github.com/Nico-Curti/cardio/blob/master/cardio/pre_process.py):
 
   The first step is the pre-processing of raw data. In this step we perform the demodulation and the smoothing of the signal, focusing only on the red channel of an RGB signal (since G and B are mostly absorbed by skin). From now on we will call as signal the variation of R channel respect time. The smoothing is made possible through the use of a central simple moving average whose window length is equal to approximately 1 second (so its length expressed in number of points is numerically equivalent to the sampling frequency of the acquired signal divided by 1Hz). This procedure acts like a high-pass filter. Then the Hilbert transform of the signal is computed. This last procedure allows to obtain the analytic signal (a complex evaluated function whose real and imaginary part are one the Hilbert tranform of the other). From the analytic signal we can extract the instantaneous amplitude (also called envelope) and the instantaneous phase. Dividing the analytic signal element-wise by its envelope we obtain the demodulated signal which is sent as output. Please note that, due to the usage of a movinga average window, the output signal will be shorter than the input signal, with difference equal to the window length.
 
@@ -49,7 +49,7 @@ The analysis work-flow is centred around the pre-processing of "raw" data with s
 
     high-pass filtered and demodulated signal, shortened by approximately 1 second, splitted in its signal values (stored into the variable "sign") and its ordered time values (stored into the variable "time").
 
-- (2) [create_db.py](https://github.com/Nico-Curti/cardio/blob/master/modules/create_db.py): 
+- (2) [create_db.py](https://github.com/Nico-Curti/cardio/blob/master/cardio/create_db.py): 
   
   The pre-process step is called inside the DB creation, in which we process each signal (joined with its information labels) and we extract many features in order to store them in a DB. the code implements the most common features of cardiological data, like the BPM (beats per minute), SDNN (standard deviation normal to normal), SDSD (standard deviation of successive difference), PNN20 (percentage normal to normal < 20ms), PNN50 (percentage normal to normal < 50ms) or TPR (turning point ratio) and some similar features. More complex (and dynamical) features like the mutual information and the embedding dimension (see. Takens theorem) are also computed.
 
@@ -71,7 +71,7 @@ The analysis work-flow is centred around the pre-processing of "raw" data with s
 
     Length is supposed to be expressed in cm.
 
-    Each text is a valid VALUE, but some [replacements](https://github.com/Nico-Curti/cardio/blob/master/modules/create_db.py#L122) will be employed.
+    Each text is a valid VALUE, but some [replacements](https://github.com/Nico-Curti/cardio/blob/master/cardio/create_db.py#L122) will be employed.
 
     Optional FIELDNAMEs can be added but will be discarded.
 
@@ -80,7 +80,7 @@ The analysis work-flow is centred around the pre-processing of "raw" data with s
 
   - OUTPUT:
 
-    A .json file in the current working directory as *cardio.json*, containing a dictionary of dictionaries. The outer dictionary has the patient filename as key and, as value, an inner dictionary whose structure is shown [here](https://github.com/Nico-Curti/cardio/blob/master/modules/create_db.py#L250).
+    A .json file in the current working directory as *cardio.json*, containing a dictionary of dictionaries. The outer dictionary has the patient filename as key and, as value, an inner dictionary whose structure is shown [here](https://github.com/Nico-Curti/cardio/blob/master/cardio/create_db.py#L250).
 
   create_db.py can be executed from terminal with the following arguments:
   
@@ -91,13 +91,13 @@ The analysis work-flow is centred around the pre-processing of "raw" data with s
 
 The following modules are used for database loading/cleaning and feature extraction pipelines. Please note that they only contain functions.
 
-  - [clean_db.py](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py): 
+  - [clean_db.py](https://github.com/Nico-Curti/cardio/blob/master/cardio/clean_db.py): 
     
     Python module before analyzing the data, the database must be cleaned; clean_db offers a way to load and clean a database by removing useless columns or patients with incomplete or incorrect data wherever specified. It contains only functions; it cannot be executed as     \_\_main\_\_.
 
     Please note that we consider incomplete or incorrect data those with fields of interest with NaN values or meaningless zero values. The zeros are generally considered when checking the fields Age, Weight and Length.
 
-  - [sdppg_features.py](https://github.com/Nico-Curti/cardio/blob/master/modules/sdppg_features.py): 
+  - [sdppg_features.py](https://github.com/Nico-Curti/cardio/blob/master/cardio/sdppg_features.py): 
     
     Python module to allow feature extraction from SDPPG, which is the second derivative of a PPG signal with respect to time. A few examples of intersting features are the waves "a", "b", "c", "d" and "e", the AGI index and the time intervals between consecutive waves. It contains only functions; it cannot be executed as \_\_main\_\_. 
 
@@ -109,7 +109,7 @@ The following modules are used for database loading/cleaning and feature extract
 
     Please note that the signal acquired from smartphone PPG might need to be flipped.
 
-  - [double_gaussian_features.py](https://github.com/Nico-Curti/cardio/blob/master/modules/double_gaussian_features.py): 
+  - [double_gaussian_features.py](https://github.com/Nico-Curti/cardio/blob/master/cardio/double_gaussian_features.py): 
     
     Python module to allow feature extraction from dicrotic notch by performing a double gaussian fit over each beat of a signal; it cannot be executed as \_\_main\_\_.
 
@@ -118,7 +118,7 @@ Further information about called functions available [here](https://github.com/N
 
 ### Pipelines 
 
-- [feature_extraction.py](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py):
+- [feature_extraction.py](https://github.com/Nico-Curti/cardio/blob/master/cardio/clean_db.py):
 
   Pipeline to add features to the cardiological database. It must be executed from the folder cardio/pipeline. 
   
@@ -131,7 +131,7 @@ Further information about called functions available [here](https://github.com/N
 
   The output is a *.json* file which contains the initial features and the new ones. Please note that if the keys of the new features are already used, the extracted features will overwrite the old ones.
 
-- [data_analysis](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py):
+- [data_analysis](https://github.com/Nico-Curti/cardio/blob/master/cardio/clean_db.py):
   
   An example of script for the processing of the data to estimate the patients' age. We suggest that the user execute it cell by cell within an IDE such as Spyder. 
 

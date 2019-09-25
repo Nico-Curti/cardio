@@ -3,11 +3,11 @@ import numpy as np
 import os
 import sys
 import shutil
-sys.path.append("../modules")
+sys.path.append("../cardio")
 import create_db
 
 def test_create_db():
-  sys.path.append("../test_py")
+  sys.path.append("../test")
   if os.path.exists("test") == False:
     os.mkdir("test")
   with open("test/test_1_data.txt", 'w') as data:

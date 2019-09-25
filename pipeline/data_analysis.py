@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 
 import sys
 # cardio stuff
-sys.path.append("../modules")
+sys.path.append("../cardio")
 import clean_db
 sys.path.append("../pipeline")
 # %%

@@ -7,7 +7,7 @@ from operator import itemgetter
 import sys, argparse
 
 # cardio stuff
-sys.path.append("../modules")
+sys.path.append("../cardio")
 import clean_db, sdppg_features
 import double_gaussian_features as dgf
 sys.path.append("../pipeline")
