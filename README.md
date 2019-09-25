@@ -69,6 +69,8 @@ The analysis work-flow is centred around the pre-processing of "raw" data with s
     
     Each FIELDNAME must be unique, and the necessary FIELDNAMEs are: Device, Sex, Age, Length, Weight, City, Country, Lifestyle, Smoking, Afib, Rhythm, Class.
 
+    Length is supposed to be expressed in cm.
+
     Each text is a valid VALUE, but some [replacements](https://github.com/Nico-Curti/cardio/blob/master/modules/create_db.py#L122) will be employed.
 
     Optional FIELDNAMEs can be added but will be discarded.
@@ -118,7 +120,33 @@ Further information about called functions available [here](https://github.com/N
 
 - [feature_extraction.py](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py):
 
+  Pipeline to add features to the cardiological database. It must be executed from the folder cardio/pipeline. 
+  
+  Its command-line arguments are:
+
+  - -in INPUT_JSON    Input json file
+  - -out OUTPUT_JSON  Output json file. Default = cadio_final.json
+  
+  The input *.json* file must follow the guidelines provided in [Database Generation](#database-generation). The database must have the following fields: time (array), signal (array), weight (scalar), length (scalar), age (scalar).
+
+  The output is a *.json* file which contains the initial features and the new ones. Please note that if the keys of the new features are already used, the extracted features will overwrite the old ones.
+
 - [data_analysis](https://github.com/Nico-Curti/cardio/blob/master/modules/clean_db.py):
+  
+  An example of script for the processing of the data to estimate the patients' age. We suggest that the user execute it cell by cell within an IDE such as Spyder. 
+
+  The database is loaded and cleaned by removing the rhythm, city, country, filename, filenumber columns (if present) and the array-like columns ('RR', 'AA', 'Rpeakvalues', 'time', 'signal'). 
+  
+  Rows with NaN values in the fields 'weight', 'tpr', 'madRR', 'medianRR', 'opt_delay', 'afib', 'age', 'sex','smoke', 'afib', 'bmi', 'lifestyle' are removed after checking the existence of the key. If any of the previous keys does not exist, it is skipped.
+
+  Rows with 0s in 'age', 'weight' and 'length' are removed because they are meaningless within this dataset.
+
+  Before any data analysis, we perform an outlier removal in a subset of meaningful features such that patients with at least a feature outside the interval \[median - 4\*mad, median + 4\*mad\] are discarded, where
+    - "median" is the median value of the feature;
+    - "mad" is the median absolute deviation of the feature.
+
+  The features are standardised. We perform a PCA and extract enough components to have the 99% of explained variance. We use a ridge regression, whose target is age, and we validate the model with a 10-fold validation.
+
   
 
 ## Authors
