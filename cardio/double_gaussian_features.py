@@ -137,9 +137,6 @@ def features_from_dicrotic_notch(time, signal):
   total_beat_height_list: list; list containing the range on y axis covered
   by each single peak
 
-  correct_x_of_maxima: list; list containing the x component of the maxima of
-  each single peak
-
   Example
   ----
   >>>import numpy as np
