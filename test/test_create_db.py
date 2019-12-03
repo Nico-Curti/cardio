@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import os
-import sys
 import shutil
 from cardio import create_db
 
 def test_create_db():
   dir_name = "testdir"
-  sys.path.append("../test")
-  if os.path.exists("test") == False:
+  if os.path.exists(dir_name) == False:
     os.mkdir(dir_name)
   with open(dir_name + "/test_1_data.txt", 'w') as data:
     data.write("Time,R,G,B,X,Y,Z\n")

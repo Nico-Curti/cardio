@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import sys
-sys.path.append("../cardio")
 from cardio import double_gaussian_features
 
 
