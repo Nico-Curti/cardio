@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # cardio stuff
-import create_db
-import pre_process as pr
+from cardio import create_db
+from cardio import pre_process as pr
 
 # standard libraries
 import numpy as np

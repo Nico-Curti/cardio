@@ -15,7 +15,7 @@ from sklearn.metrics.pairwise import euclidean_distances as dist
 from statsmodels.tsa.tsatools import lagmat
 import json
 import matplotlib.pylab as plt
-import pre_process as pr
+from cardio import pre_process as pr
 
 
 def detect_peaks(signal, mov_avg):

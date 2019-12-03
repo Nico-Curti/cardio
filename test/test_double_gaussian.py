@@ -4,7 +4,7 @@
 import numpy as np
 import sys
 sys.path.append("../cardio")
-import double_gaussian_features
+from cardio import double_gaussian_features
 
 
 def test_find_x_of_minima_on_signal_with_dicrotic_notches():

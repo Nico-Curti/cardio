@@ -3,14 +3,14 @@ import numpy as np
 import os
 import sys
 import shutil
-sys.path.append("../cardio")
-import create_db
+from cardio import create_db
 
 def test_create_db():
+  dir_name = "testdir"
   sys.path.append("../test")
   if os.path.exists("test") == False:
-    os.mkdir("test")
-  with open("test/test_1_data.txt", 'w') as data:
+    os.mkdir(dir_name)
+  with open(dir_name + "/test_1_data.txt", 'w') as data:
     data.write("Time,R,G,B,X,Y,Z\n")
     n = 1000
     t = np.arange(n)*0.033
@@ -34,11 +34,11 @@ def test_create_db():
       s += str(t[_]) + "," + str(r[_]) + "," + str(g[_]) + "," + str(b[_]) +\
         str(x[_]) + "," + str(y[_]) + "," + str(z[_]) + "\n"
     data.write(s)
-  with open("test/test_1_info.txt", 'w') as info:
+  with open(dir_name + "/test_1_info.txt", 'w') as info:
     info.write("Var1,Var2\nDevice,iPhone\nSex,\nAge,\nWeight,\nLength,\nCity,"
                + "\nCountry,\nLifestyle,\nSmoking,\nAfib,\nRhythm,\nClass,\n")
   directory = "test"
   create_db.create_db(directory, directory)
   assert os.path.isfile("cardio.json")
   os.remove("cardio.json")
-  shutil.rmtree("test")
+  shutil.rmtree(dir_name)
